@@ -6126,3 +6126,133 @@ body.dark-mode .auth-password-toggle {
   background: rgba(125, 226, 228, 0.13) !important;
   color: #7de2e4 !important;
 }
+
+/* v106: ações de conta e sessão única */
+.auth-topbar-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+}
+
+.auth-topbar-actions .button,
+.auth-account-actions .button {
+  min-height: 42px !important;
+  padding: 0 16px !important;
+  border-radius: 14px !important;
+  font-size: 0.84rem !important;
+  white-space: nowrap !important;
+}
+
+.auth-topbar-actions .button:disabled,
+.auth-account-actions .button:disabled {
+  opacity: 0.68 !important;
+  cursor: wait !important;
+}
+
+.auth-topbar-actions .auth-exit-button {
+  color: var(--text) !important;
+  border-color: rgba(8, 41, 47, 0.18) !important;
+}
+
+.auth-topbar-actions .auth-exit-all-button,
+.auth-account-actions .button[data-auth-action="logout-all"] {
+  color: #0b5962 !important;
+  background: rgba(0, 128, 139, 0.08) !important;
+  border-color: rgba(0, 128, 139, 0.2) !important;
+}
+
+html.dark-mode .auth-topbar-actions .auth-exit-button,
+body.dark-mode .auth-topbar-actions .auth-exit-button {
+  color: #eef8f8 !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+html.dark-mode .auth-topbar-actions .auth-exit-all-button,
+body.dark-mode .auth-topbar-actions .auth-exit-all-button,
+html.dark-mode .auth-account-actions .button[data-auth-action="logout-all"],
+body.dark-mode .auth-account-actions .button[data-auth-action="logout-all"] {
+  color: #dff8f7 !important;
+  background: rgba(43, 220, 214, 0.1) !important;
+  border-color: rgba(43, 220, 214, 0.24) !important;
+}
+
+.auth-confirm-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 18px !important;
+  background: rgba(5, 17, 20, 0.48) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.auth-confirm-card {
+  width: min(420px, 100%) !important;
+  border: 1px solid rgba(8, 41, 47, 0.14) !important;
+  border-radius: 24px !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  box-shadow: 0 24px 70px rgba(5, 17, 20, 0.22) !important;
+  padding: 24px !important;
+  color: var(--text) !important;
+}
+
+.auth-confirm-card h2 {
+  margin: 8px 0 8px !important;
+  font-size: clamp(1.45rem, 6vw, 2rem) !important;
+  line-height: 1.05 !important;
+}
+
+.auth-confirm-card p {
+  margin: 0 !important;
+  color: var(--muted) !important;
+  font-weight: 700 !important;
+  line-height: 1.45 !important;
+}
+
+.auth-confirm-actions {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px !important;
+  margin-top: 22px !important;
+}
+
+.auth-confirm-actions .button {
+  min-height: 48px !important;
+  border-radius: 15px !important;
+}
+
+html.dark-mode .auth-confirm-card,
+body.dark-mode .auth-confirm-card {
+  background: rgba(12, 28, 32, 0.97) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45) !important;
+}
+
+html.dark-mode .auth-confirm-card p,
+body.dark-mode .auth-confirm-card p {
+  color: rgba(238, 248, 248, 0.78) !important;
+}
+
+@media (max-width: 720px) {
+  .auth-topbar-actions {
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
+
+  .auth-topbar-actions .button {
+    flex: 1 1 auto !important;
+    min-width: 112px !important;
+  }
+
+  .auth-confirm-card {
+    padding: 20px !important;
+    border-radius: 20px !important;
+  }
+
+  .auth-confirm-actions {
+    grid-template-columns: 1fr !important;
+  }
+}

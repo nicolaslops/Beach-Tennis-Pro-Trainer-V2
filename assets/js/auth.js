@@ -13,6 +13,8 @@
   const ACTIVE_PURCHASE_STATUSES = new Set([
     "approved"
   ]);
+  const SESSION_CHECK_INTERVAL_MS = 15000;
+  const SESSION_REPLACED_MESSAGE = "Sua conta foi acessada em outro dispositivo. Entre novamente para continuar.";
 
   const state = {
     client: null,
@@ -21,7 +23,14 @@
     flash: null,
     firstAccessPasswordChanged: false,
     initialized: false,
-    validating: false
+    validating: false,
+    authMutationInProgress: false,
+    sessionCheckInFlight: false,
+    handlingReplacedSession: false,
+    sessionMonitorTimer: null,
+    sessionMonitorFocusHandler: null,
+    sessionMonitorVisibilityHandler: null,
+    logoutInProgress: false
   };
 
   function escapeHTML(value) {
@@ -78,6 +87,10 @@
     const flash = state.flash;
     state.flash = null;
     return flash;
+  }
+
+  function isPrivateRoute(route = currentRoute()) {
+    return ![ROUTES.access, ROUTES.login, ROUTES.forgot, ROUTES.reset].includes(normalizePath(route));
   }
 
   function getAuthRoot() {
@@ -420,6 +433,157 @@
     return record?.must_change_password === true || String(record?.must_change_password).toLowerCase() === "true";
   }
 
+  function clearPrivateAuthState() {
+    state.session = null;
+    state.accessRecord = null;
+    state.firstAccessPasswordChanged = false;
+  }
+
+  async function registerCurrentSession(client = getSupabaseClient()) {
+    if (!client) return false;
+    const { data, error } = await client.rpc("register_current_session");
+    if (error || data !== true) {
+      console.warn("Não foi possível registrar a sessão atual.", error || data);
+      return false;
+    }
+    return true;
+  }
+
+  async function isCurrentSession(client = getSupabaseClient()) {
+    if (!client || !state.session) return false;
+    const { data, error } = await client.rpc("is_current_session");
+    if (error) throw error;
+    return data === true;
+  }
+
+  async function endCurrentSession(client = getSupabaseClient()) {
+    if (!client || !state.session) return false;
+    const { data, error } = await client.rpc("end_current_session");
+    if (error) {
+      console.warn("Não foi possível encerrar a sessão ativa no servidor.", error);
+      return false;
+    }
+    return data === true;
+  }
+
+  function stopSessionMonitor() {
+    if (state.sessionMonitorTimer) {
+      window.clearInterval(state.sessionMonitorTimer);
+      state.sessionMonitorTimer = null;
+    }
+    if (state.sessionMonitorFocusHandler) {
+      window.removeEventListener("focus", state.sessionMonitorFocusHandler);
+      state.sessionMonitorFocusHandler = null;
+    }
+    if (state.sessionMonitorVisibilityHandler) {
+      document.removeEventListener("visibilitychange", state.sessionMonitorVisibilityHandler);
+      state.sessionMonitorVisibilityHandler = null;
+    }
+  }
+
+  function startSessionMonitor() {
+    if (state.sessionMonitorTimer || !state.session) return;
+    state.sessionMonitorFocusHandler = () => verifyCurrentSession({ silentError: true });
+    state.sessionMonitorVisibilityHandler = () => {
+      if (document.visibilityState === "visible") verifyCurrentSession({ silentError: true });
+    };
+    window.addEventListener("focus", state.sessionMonitorFocusHandler);
+    document.addEventListener("visibilitychange", state.sessionMonitorVisibilityHandler);
+    state.sessionMonitorTimer = window.setInterval(() => {
+      verifyCurrentSession({ silentError: true });
+    }, SESSION_CHECK_INTERVAL_MS);
+  }
+
+  async function handleReplacedSession() {
+    if (state.handlingReplacedSession) return;
+    state.handlingReplacedSession = true;
+    const client = getSupabaseClient();
+    stopSessionMonitor();
+    try {
+      if (client) {
+        await client.auth.signOut({ scope: "local" });
+      }
+    } catch (error) {
+      console.warn("Não foi possível encerrar a sessão local substituída.", error);
+    }
+    clearPrivateAuthState();
+    lockApp();
+    navigate(ROUTES.login, {
+      replace: true,
+      message: SESSION_REPLACED_MESSAGE,
+      type: "warning"
+    });
+    state.handlingReplacedSession = false;
+  }
+
+  function setLogoutButtonsBusy(activeButton, busy, text = "Saindo...") {
+    document.querySelectorAll("[data-auth-action='logout'], [data-auth-action='logout-all']").forEach((button) => {
+      if (busy) {
+        button.dataset.originalText ||= button.textContent;
+        button.disabled = true;
+        if (button === activeButton) button.textContent = text;
+      } else {
+        button.disabled = false;
+        if (button.dataset.originalText) button.textContent = button.dataset.originalText;
+      }
+    });
+  }
+
+  function confirmLogoutAll() {
+    return new Promise((resolve) => {
+      const existing = document.querySelector(".auth-confirm-backdrop");
+      if (existing) existing.remove();
+
+      const backdrop = document.createElement("div");
+      backdrop.className = "auth-confirm-backdrop";
+      backdrop.innerHTML = `
+        <div class="auth-confirm-card" role="dialog" aria-modal="true" aria-labelledby="authConfirmTitle">
+          <span class="eyebrow">Segurança da conta</span>
+          <h2 id="authConfirmTitle">Sair de todos os dispositivos?</h2>
+          <p>Deseja sair da sua conta em todos os dispositivos?</p>
+          <div class="auth-confirm-actions">
+            <button class="button ghost" type="button" data-auth-confirm="cancel">Cancelar</button>
+            <button class="button primary" type="button" data-auth-confirm="confirm">Sair de todos</button>
+          </div>
+        </div>
+      `;
+
+      const finish = (value) => {
+        backdrop.remove();
+        resolve(value);
+      };
+
+      backdrop.addEventListener("click", (event) => {
+        const action = event.target.closest("[data-auth-confirm]")?.dataset.authConfirm;
+        if (action === "confirm") finish(true);
+        if (action === "cancel" || event.target === backdrop) finish(false);
+      });
+
+      document.body.appendChild(backdrop);
+      backdrop.querySelector("[data-auth-confirm='cancel']")?.focus();
+    });
+  }
+
+  async function verifyCurrentSession(options = {}) {
+    if (!state.session || !isPrivateRoute()) return true;
+    if (state.sessionCheckInFlight) return true;
+    state.sessionCheckInFlight = true;
+    try {
+      const current = await isCurrentSession();
+      if (!current) {
+        await handleReplacedSession();
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.warn("Não foi possível confirmar a sessão atual.", error);
+      if (!options.silentError) throw error;
+      return true;
+    } finally {
+      state.sessionCheckInFlight = false;
+    }
+  }
+
   async function validateAccess(session) {
     if (state.validating) return;
     state.validating = true;
@@ -427,12 +591,17 @@
     renderLoading("Validando sua compra...");
 
     try {
+      const sessionIsValid = await verifyCurrentSession();
+      if (!sessionIsValid) return;
+
       const record = await fetchPurchase(session);
       state.accessRecord = record;
 
       if (!isAccessActive(record)) {
-        state.firstAccessPasswordChanged = false;
-        await getSupabaseClient()?.auth.signOut();
+        await endCurrentSession();
+        stopSessionMonitor();
+        clearPrivateAuthState();
+        await getSupabaseClient()?.auth.signOut({ scope: "local" });
         lockApp();
         navigate(ROUTES.login, {
           replace: true,
@@ -443,6 +612,7 @@
       }
 
       if (mustChangePassword(record)) {
+        startSessionMonitor();
         lockApp();
         navigate(ROUTES.firstAccess, { replace: true });
         return;
@@ -450,15 +620,18 @@
 
       state.firstAccessPasswordChanged = false;
       unlockApp();
+      startSessionMonitor();
       if (AUTH_ROUTES.has(currentRoute())) {
         replaceRouteSilently(ROUTES.app);
       }
     } catch (error) {
-      await getSupabaseClient()?.auth.signOut();
+      stopSessionMonitor();
+      clearPrivateAuthState();
+      await getSupabaseClient()?.auth.signOut({ scope: "local" });
       lockApp();
       navigate(ROUTES.login, {
         replace: true,
-        message: "Não foi possível entrar. Tente novamente.",
+        message: "Não foi possível confirmar sua sessão. Entre novamente.",
         type: "warning"
       });
     } finally {
@@ -494,13 +667,31 @@
       return;
     }
     setFormBusy(form, true);
-    const { data, error } = await client.auth.signInWithPassword({ email, password });
-    setFormBusy(form, false);
-    if (error) {
-      renderLogin({ message: "E-mail ou senha incorretos.", type: "warning" });
-      return;
+    state.authMutationInProgress = true;
+    try {
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
+      if (error) {
+        renderLogin({ message: "E-mail ou senha incorretos.", type: "warning" });
+        return;
+      }
+      if (data.session) {
+        state.session = data.session;
+        const registered = await registerCurrentSession(client);
+        if (!registered) {
+          await client.auth.signOut({ scope: "local" });
+          clearPrivateAuthState();
+          renderLogin({
+            message: "Não foi possível autorizar este dispositivo agora. Tente novamente.",
+            type: "warning"
+          });
+          return;
+        }
+        await validateAccess(data.session);
+      }
+    } finally {
+      state.authMutationInProgress = false;
+      setFormBusy(form, false);
     }
-    if (data.session) await validateAccess(data.session);
   }
 
   function resetRedirectUrl() {
@@ -536,63 +727,104 @@
     });
   }
 
+  async function completeAccessAndRegisterSession(client) {
+    const { data: completed, error: rpcError } = await client.rpc("complete_first_access");
+    if (rpcError || completed !== true) {
+      return { session: null, error: rpcError || new Error("complete_first_access_false") };
+    }
+
+    const { data } = await client.auth.getSession();
+    const session = data.session || null;
+    if (!session) {
+      return { session: null, error: new Error("session_not_found_after_password_update") };
+    }
+
+    state.session = session;
+    const registered = await registerCurrentSession(client);
+    if (!registered) {
+      return { session: null, error: new Error("register_current_session_failed") };
+    }
+
+    return { session, error: null };
+  }
+
   async function handleResetPassword(form) {
     const client = getSupabaseClient();
+    if (!client) {
+      renderReset({ message: configMessage(), type: "warning" });
+      return;
+    }
     const passwordError = validatePasswords(form);
     if (passwordError) {
       renderReset({ message: passwordError, type: "warning" });
       return;
     }
     setFormBusy(form, true);
-    const { error } = await client.auth.updateUser({
-      password: String(form.elements.password?.value || "")
-    });
-    setFormBusy(form, false);
-    if (error) {
-      renderReset({ message: "Não foi possível salvar a nova senha. Solicite outro link.", type: "warning" });
-      return;
+    state.authMutationInProgress = true;
+    try {
+      const { error } = await client.auth.updateUser({
+        password: String(form.elements.password?.value || "")
+      });
+      if (error) {
+        renderReset({ message: "Não foi possível salvar a nova senha. Solicite outro link.", type: "warning" });
+        return;
+      }
+      const result = await completeAccessAndRegisterSession(client);
+      if (result.error || !result.session) {
+        await client.auth.signOut({ scope: "local" });
+        clearPrivateAuthState();
+        lockApp();
+        navigate(ROUTES.login, {
+          replace: true,
+          message: "Senha alterada. Entre novamente para acessar o app.",
+          type: "success"
+        });
+        return;
+      }
+      await validateAccess(result.session);
+    } finally {
+      state.authMutationInProgress = false;
+      setFormBusy(form, false);
     }
-    await client.auth.signOut();
-    lockApp();
-    navigate(ROUTES.login, {
-      replace: true,
-      message: "Senha alterada. Entre novamente para acessar o app.",
-      type: "success"
-    });
   }
 
   async function handleFirstAccess(form) {
     const client = getSupabaseClient();
+    if (!client) {
+      renderFirstAccess({ message: configMessage(), type: "warning" });
+      return;
+    }
     const passwordError = validatePasswords(form);
     if (passwordError) {
       renderFirstAccess({ message: passwordError, type: "warning" });
       return;
     }
     setFormBusy(form, true);
-    const { error: passwordErrorResponse } = await client.auth.updateUser({
-      password: String(form.elements.password?.value || "")
-    });
-    if (passwordErrorResponse) {
-      setFormBusy(form, false);
-      renderFirstAccess({ message: "Não foi possível alterar a senha. Tente novamente.", type: "warning" });
-      return;
-    }
-
-    const { data: completed, error: rpcError } = await client.rpc("complete_first_access");
-    setFormBusy(form, false);
-    if (rpcError || completed !== true) {
-      state.firstAccessPasswordChanged = true;
-      renderFirstAccess({
-        message: "Senha alterada, mas não foi possível confirmar a liberação do acesso. Tente concluir novamente.",
-        type: "warning"
+    state.authMutationInProgress = true;
+    try {
+      const { error: passwordErrorResponse } = await client.auth.updateUser({
+        password: String(form.elements.password?.value || "")
       });
-      return;
-    }
+      if (passwordErrorResponse) {
+        renderFirstAccess({ message: "Não foi possível alterar a senha. Tente novamente.", type: "warning" });
+        return;
+      }
 
-    state.firstAccessPasswordChanged = false;
-    const { data } = await client.auth.getSession();
-    if (data.session) {
-      await validateAccess(data.session);
+      const result = await completeAccessAndRegisterSession(client);
+      if (result.error || !result.session) {
+        state.firstAccessPasswordChanged = true;
+        renderFirstAccess({
+          message: "Senha alterada, mas não foi possível confirmar a liberação do acesso. Tente concluir novamente.",
+          type: "warning"
+        });
+        return;
+      }
+
+      state.firstAccessPasswordChanged = false;
+      await validateAccess(result.session);
+    } finally {
+      state.authMutationInProgress = false;
+      setFormBusy(form, false);
     }
   }
 
@@ -603,43 +835,96 @@
       return;
     }
     setFormBusy(form, true);
-    const { data: completed, error: rpcError } = await client.rpc("complete_first_access");
-    setFormBusy(form, false);
-    if (rpcError || completed !== true) {
-      state.firstAccessPasswordChanged = true;
-      renderFirstAccess({
-        message: "Ainda não foi possível confirmar a liberação do acesso. Tente novamente em instantes.",
-        type: "warning",
-        passwordUpdated: true
-      });
-      return;
+    state.authMutationInProgress = true;
+    try {
+      const result = await completeAccessAndRegisterSession(client);
+      if (result.error || !result.session) {
+        state.firstAccessPasswordChanged = true;
+        renderFirstAccess({
+          message: "Ainda não foi possível confirmar a liberação do acesso. Tente novamente em instantes.",
+          type: "warning",
+          passwordUpdated: true
+        });
+        return;
+      }
+      state.firstAccessPasswordChanged = false;
+      await validateAccess(result.session);
+    } finally {
+      state.authMutationInProgress = false;
+      setFormBusy(form, false);
     }
-    state.firstAccessPasswordChanged = false;
-    const { data } = await client.auth.getSession();
-    if (data.session) await validateAccess(data.session);
   }
 
-  async function logout(options = {}) {
+  async function logout(options = {}, activeButton = null) {
+    if (state.logoutInProgress) return;
+    state.logoutInProgress = true;
+    setLogoutButtonsBusy(activeButton, true, options.loadingText || "Saindo...");
     const client = getSupabaseClient();
-    if (client) await client.auth.signOut();
-    state.session = null;
-    state.accessRecord = null;
-    state.firstAccessPasswordChanged = false;
+    let signOutError = null;
+    stopSessionMonitor();
+
+    try {
+      if (client && !options.skipEndSession) {
+        await endCurrentSession(client);
+      }
+    } catch (error) {
+      console.warn("Não foi possível finalizar a sessão ativa antes do logout.", error);
+    }
+
+    try {
+      if (client) {
+        const { error } = await client.auth.signOut({ scope: options.scope || "local" });
+        signOutError = error || null;
+      }
+    } catch (error) {
+      signOutError = error;
+    }
+
+    clearPrivateAuthState();
     lockApp();
-    navigate(options.route || preferredSignedOutRoute(), {
+    navigate(options.route || ROUTES.login, {
       replace: true,
-      message: options.message || "Você saiu da conta.",
-      type: options.type || "success"
+      message: signOutError
+        ? "Não foi possível encerrar a sessão corretamente. Atualize a página e tente novamente."
+        : options.message || "Sessão encerrada com sucesso.",
+      type: signOutError ? "warning" : options.type || "success"
     });
+    setLogoutButtonsBusy(activeButton, false);
+    state.logoutInProgress = false;
+  }
+
+  async function logoutEverywhere(activeButton = null) {
+    if (state.logoutInProgress) return;
+    const confirmed = await confirmLogoutAll();
+    if (!confirmed) return;
+    await logout({
+      scope: "global",
+      route: ROUTES.login,
+      message: "Você saiu da conta em todos os dispositivos.",
+      type: "success",
+      loadingText: "Saindo..."
+    }, activeButton);
   }
 
   function injectAccountActions() {
+    const topbar = document.querySelector(".topbar");
+    if (topbar && !topbar.querySelector(".auth-topbar-actions")) {
+      const topbarActions = document.createElement("div");
+      topbarActions.className = "topbar-actions auth-topbar-actions";
+      topbarActions.innerHTML = `
+        <button class="button ghost auth-exit-button" type="button" data-auth-action="logout">Sair</button>
+        <button class="button secondary auth-exit-all-button" type="button" data-auth-action="logout-all">Sair de todos</button>
+      `;
+      topbar.appendChild(topbarActions);
+    }
+
     const settingsPanel = document.querySelector("#settings-view .settings-panel");
     if (!settingsPanel || settingsPanel.querySelector(".auth-account-actions")) return;
     const actions = document.createElement("div");
     actions.className = "inline-actions auth-account-actions";
     actions.innerHTML = `
       <button class="button ghost danger" type="button" data-auth-action="logout">Sair da conta</button>
+      <button class="button secondary danger" type="button" data-auth-action="logout-all">Sair de todos os dispositivos</button>
     `;
     settingsPanel.appendChild(actions);
   }
@@ -660,7 +945,8 @@
     const action = actionButton.dataset.authAction;
     if (action === "choose-app") handleChooseApp();
     if (action === "choose-web") handleChooseWeb();
-    if (action === "logout") logout();
+    if (action === "logout") logout({}, actionButton);
+    if (action === "logout-all") logoutEverywhere(actionButton);
     if (action === "toggle-password") {
       const control = actionButton.closest(".auth-password-control");
       const input = control?.querySelector("input");
@@ -696,7 +982,12 @@
     if (event.key && event.key.includes("supabase")) {
       getSupabaseClient()?.auth.getSession().then(({ data }) => {
         if (data.session) validateAccess(data.session);
-        else logout({ route: preferredSignedOutRoute(), message: "Sessão encerrada em outra aba.", type: "info" });
+        else logout({
+          route: ROUTES.login,
+          message: "Sessão encerrada em outra aba.",
+          type: "info",
+          skipEndSession: true
+        });
       });
     }
   });
@@ -716,13 +1007,14 @@
 
     client.auth.onAuthStateChange((event, session) => {
       state.session = session;
+      if (state.authMutationInProgress) return;
       if (event === "PASSWORD_RECOVERY") {
         navigate(ROUTES.reset, { replace: true });
         return;
       }
       if (event === "SIGNED_OUT") {
-        state.session = null;
-        state.accessRecord = null;
+        stopSessionMonitor();
+        clearPrivateAuthState();
         document.body.classList.remove("auth-pending");
         if (!AUTH_ROUTES.has(currentRoute())) renderCurrentRoute();
         return;
