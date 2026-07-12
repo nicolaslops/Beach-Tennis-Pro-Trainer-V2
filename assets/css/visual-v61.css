@@ -6073,7 +6073,7 @@ body.dark-mode .auth-account-actions {
   .auth-shell {
     align-items: flex-start !important;
     padding: 18px !important;
-    overflow-y: auto !important;
+    overflow: hidden !important;
   }
 
   .auth-card,
@@ -6152,8 +6152,8 @@ body.dark-mode .auth-password-toggle {
 .pwa-welcome-card,
 .pwa-welcome-card.auth-card {
   width: min(92vw, 410px) !important;
-  max-height: calc(100dvh - 28px) !important;
-  overflow-y: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
   padding: clamp(18px, 3.6vw, 28px) !important;
   border-radius: 22px !important;
   gap: 8px !important;
@@ -6496,5 +6496,156 @@ body.dark-mode .card-favorite.is-active {
 
   .clean-list-card .card-content {
     padding: 15px !important;
+  }
+}
+
+/* v111: telas de acesso/login compactas, sem rolagem interna aparente */
+.pwa-welcome,
+.auth-shell {
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+.pwa-welcome::-webkit-scrollbar,
+.auth-shell::-webkit-scrollbar,
+.pwa-welcome-card::-webkit-scrollbar,
+.auth-card::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.pwa-welcome-card,
+.pwa-welcome-card.auth-card,
+.auth-card,
+.pwa-welcome-card.auth-access-card,
+.pwa-welcome-card.auth-login-card {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.pwa-welcome-card:not(.auth-card) {
+  width: min(90vw, 360px) !important;
+  padding: clamp(18px, 3.4vw, 24px) !important;
+  border-radius: 20px !important;
+}
+
+.pwa-welcome-card:not(.auth-card) .pwa-welcome-logo {
+  width: clamp(48px, 9vw, 58px) !important;
+  height: clamp(48px, 9vw, 58px) !important;
+  margin-bottom: 8px !important;
+}
+
+.pwa-welcome-card:not(.auth-card) h1 {
+  max-width: 13ch !important;
+  font-size: clamp(1.55rem, 5vw, 2.12rem) !important;
+  line-height: 1.03 !important;
+}
+
+.pwa-welcome-card:not(.auth-card) p {
+  max-width: 30ch !important;
+  margin: 10px 0 14px !important;
+  font-size: 0.92rem !important;
+  line-height: 1.4 !important;
+}
+
+.pwa-welcome-card:not(.auth-card) .pwa-install-button,
+.pwa-welcome-card:not(.auth-card) .pwa-web-button {
+  min-height: 44px !important;
+  border-radius: 14px !important;
+  font-size: 0.86rem !important;
+}
+
+.pwa-welcome-card.auth-access-card {
+  width: min(90vw, 340px) !important;
+  padding: 18px !important;
+  border-radius: 19px !important;
+}
+
+.pwa-welcome-card.auth-login-card {
+  width: min(90vw, 320px) !important;
+  padding: 16px 18px !important;
+  border-radius: 18px !important;
+}
+
+.auth-login-card .pwa-welcome-logo {
+  width: 42px !important;
+  height: 42px !important;
+  margin: 0 auto 6px !important;
+  border-radius: 13px !important;
+}
+
+.auth-login-card .eyebrow {
+  font-size: 0.68rem !important;
+  letter-spacing: 0.12em !important;
+}
+
+.auth-login-card h1 {
+  font-size: clamp(1.42rem, 4.8vw, 1.68rem) !important;
+  line-height: 1.04 !important;
+  margin: 6px auto 6px !important;
+}
+
+.auth-login-card p {
+  max-width: 28ch !important;
+  margin: 0 auto 8px !important;
+  font-size: 0.8rem !important;
+  line-height: 1.34 !important;
+}
+
+.auth-login-card .auth-message {
+  margin: 4px 0 8px !important;
+  padding: 8px 10px !important;
+  border-radius: 12px !important;
+  font-size: 0.78rem !important;
+  line-height: 1.3 !important;
+}
+
+.auth-login-card .auth-form {
+  gap: 8px !important;
+  margin-top: 8px !important;
+}
+
+.auth-login-card .auth-form label {
+  gap: 4px !important;
+  font-size: 0.78rem !important;
+}
+
+.auth-login-card .auth-form input {
+  min-height: 40px !important;
+  border-radius: 12px !important;
+  font-size: 0.9rem !important;
+  padding: 0 12px !important;
+}
+
+.auth-login-card .auth-submit,
+.auth-login-card .pwa-install-button,
+.auth-login-card .pwa-web-button {
+  min-height: 40px !important;
+  border-radius: 12px !important;
+  font-size: 0.84rem !important;
+}
+
+.auth-login-card .auth-secondary-actions {
+  gap: 6px !important;
+  margin-top: 8px !important;
+}
+
+.auth-login-card .auth-link-button {
+  font-size: 0.8rem !important;
+}
+
+@media (max-width: 430px) {
+  .pwa-welcome-card:not(.auth-card),
+  .pwa-welcome-card.auth-access-card {
+    width: min(90vw, 330px) !important;
+    padding: 16px !important;
+  }
+
+  .pwa-welcome-card.auth-login-card {
+    width: min(90vw, 310px) !important;
+    padding: 15px 16px !important;
   }
 }
