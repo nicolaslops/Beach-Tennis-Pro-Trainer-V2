@@ -24,8 +24,6 @@ Ele contém somente valores públicos:
 
 ```js
 window.BTPT_ENV = {
-  NEXT_PUBLIC_SUPABASE_URL: "...",
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "...",
   VITE_SUPABASE_URL: "...",
   VITE_SUPABASE_PUBLISHABLE_KEY: "..."
 };
@@ -36,8 +34,8 @@ Também existe `.env.local` com os nomes fornecidos pelo Supabase. Esse arquivo 
 O `.env.example` fica apenas com placeholders:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
 ```
 
 Nunca coloque no front-end:

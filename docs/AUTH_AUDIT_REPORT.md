@@ -68,11 +68,6 @@ https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2
 
 As variaveis publicas sao lidas de `assets/js/env.js`:
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-
-Tambem ha compatibilidade com:
-
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_PUBLISHABLE_KEY`
 
@@ -325,8 +320,8 @@ Precisam de usuario real no Supabase:
 
 - Confirmar em producao a URL publica da V2.
 - Cadastrar as variaveis publicas na Vercel:
-  - `NEXT_PUBLIC_SUPABASE_URL`
-  - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_PUBLISHABLE_KEY`
 - Configurar `Site URL` e `Redirect URL` no Supabase.
 - Executar `docs/SUPABASE_VERIFICATION_QUERIES.sql` no Supabase.
 - Confirmar que `complete_first_access()` retorna booleano `true` no sucesso.
