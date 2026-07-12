@@ -1,0 +1,25 @@
+{
+  "name": "Beach Tennis Pro Trainer",
+  "short_name": "BT Pro",
+  "description": "App premium com exercicios, planos de aula e evolucao para Beach Tennis.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#071012",
+  "theme_color": "#071012",
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

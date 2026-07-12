@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Beach Tennis Pro Trainer</title>
+  <meta name="description" content="App premium com exercícios, planos de aula e evolução para Beach Tennis.">
+  <meta name="theme-color" content="#071012">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Beach Tennis Pro">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="assets/icons/favicon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css?v=99">
+  <link rel="stylesheet" href="assets/css/visual-v61.css?v=99">
+  <script defer src="assets/js/env.js?v=99"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="assets/js/pwa.js?v=99"></script>
+  <script defer src="assets/js/auth.js?v=99"></script>
+  <script defer src="assets/js/app.js?v=99"></script>
+</head>
+<body class="auth-locked auth-pending">
+  <section class="pwa-welcome" id="pwaWelcome" aria-labelledby="pwaWelcomeTitle">
+    <div class="pwa-welcome-card">
+      <img class="pwa-welcome-logo" src="assets/images/logo-beach-tennis-192.png" alt="">
+      <span class="eyebrow">Beach Tennis Pro Trainer</span>
+      <h1 id="pwaWelcomeTitle">Treine, planeje e evolua direto da quadra.</h1>
+      <p>Instale o app para acessar mais rápido no celular ou continue usando pela web.</p>
+      <div class="pwa-welcome-actions">
+        <button class="pwa-install-button" id="pwaInstallButton" type="button">BAIXAR APLICATIVO</button>
+        <button class="pwa-web-button" id="pwaContinueButton" type="button">Continuar na Web</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="ios-install-modal" id="iosInstallModal" hidden>
+    <div class="ios-install-card" role="dialog" aria-modal="true" aria-labelledby="iosInstallTitle">
+      <button class="ios-install-close" id="iosInstallClose" type="button" aria-label="Fechar">×</button>
+      <span class="eyebrow">Instalar no iPhone</span>
+      <h2 id="iosInstallTitle">Adicione o app à Tela de Início</h2>
+      <ol>
+        <li>Abra este site no Safari.</li>
+        <li>Toque no ícone de Compartilhar.</li>
+        <li>Escolha "Adicionar à Tela de Início".</li>
+        <li>Confirme em "Adicionar".</li>
+      </ol>
+      <button class="button primary" id="iosInstallOk" type="button">Entendi</button>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navegação principal">
+      <div class="brand">
+        <div class="brand-mark">
+          <img src="assets/images/logo-beach-tennis-192.png" alt="">
+        </div>
+        <div>
+          <strong>Beach Tennis</strong>
+          <span>Pro Trainer</span>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="nav-button active" data-view="dashboard">Home</button>
+        <button class="nav-button" data-view="exercises">Exercícios</button>
+        <button class="nav-button" data-view="favorites">Favoritos</button>
+        <button class="nav-button" data-view="builder">Montador</button>
+        <button class="nav-button" data-view="lessons">Planos</button>
+        <button class="nav-button" data-view="evolution">Evolução</button>
+        <button class="nav-button" data-view="settings">Áudio</button>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <span class="eyebrow">App premium de treino</span>
+          <h1 id="viewTitle">Home</h1>
+        </div>
+      </header>
+
+      <section class="view active" id="dashboard-view" aria-labelledby="dashboard-heading">
+        <div class="home-kicker">
+          <span data-home-greeting>Boa tarde, atleta.</span>
+          <button class="theme-toggle hero-theme-toggle" type="button" data-action="toggle-theme" aria-label="Alternar tema" title="Tema">
+            <span class="theme-toggle-icon" aria-hidden="true">☾</span>
+            <small data-theme-label>Claro</small>
+          </button>
+        </div>
+        <div class="home-headline">
+          <h2 id="dashboard-heading">O que vamos <span>evoluir</span> hoje?</h2>
+        </div>
+        <div class="hero-card">
+          <div class="hero-visual" aria-hidden="true">
+            <img class="hero-athlete-image" src="assets/images/dashboard-beach-athlete.png" alt="">
+            <div class="hero-player"></div>
+          </div>
+          <div class="hero-copy">
+            <span class="hero-chip" data-home-hero-chip>Treino recomendado</span>
+            <h3 data-home-hero-title>Defesa + transição</h3>
+            <div class="hero-meta" data-home-hero-meta>
+              <span>Intermediário</span>
+              <span>42 min</span>
+              <span>8 exercícios</span>
+            </div>
+            <div class="hero-actions">
+              <button class="button primary" data-action="navigate" data-target-view="lessons" data-home-hero-primary>Iniciar treino</button>
+              <button class="button secondary" data-action="navigate" data-target-view="builder" data-home-hero-secondary>Montar treino</button>
+            </div>
+          </div>
+        </div>
+        <section class="home-progress-card" aria-label="Progresso recomendado">
+          <div>
+            <span class="eyebrow" data-home-progress-label>Evolução de 8 semanas</span>
+            <h3 data-home-progress-title>Semana 3 de 8</h3>
+            <p data-home-progress-copy>Consistência atual: <strong>3 semanas</strong></p>
+          </div>
+          <div class="home-progress-meter" style="--progress:75%" data-home-progress-meter>
+            <strong data-home-progress-value>75% da meta</strong>
+            <span><i></i></span>
+          </div>
+        </section>
+        <section class="home-mobile-nav" aria-label="Atalhos principais do app">
+          <div class="home-card-carousel">
+            <button class="home-app-card" data-action="navigate" data-target-view="exercises">
+              <span class="home-card-art exercise-art" aria-hidden="true">
+                <svg viewBox="0 0 96 96" role="img"><path d="M23 63c18 7 34 4 50-11" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><circle cx="68" cy="28" r="9" fill="currentColor"/><rect x="26" y="22" width="28" height="42" rx="14" fill="none" stroke="currentColor" stroke-width="7" transform="rotate(35 40 43)"/></svg>
+              </span>
+              <strong>Exercícios</strong>
+              <small>Banco filtrável e didático</small>
+            </button>
+            <button class="home-app-card" data-action="navigate" data-target-view="builder">
+              <span class="home-card-art workout-art" aria-hidden="true">
+                <svg viewBox="0 0 96 96" role="img"><rect x="20" y="18" width="56" height="62" rx="12" fill="none" stroke="currentColor" stroke-width="7"/><path d="M34 36h28M34 50h22M34 64h17" stroke="currentColor" stroke-width="7" stroke-linecap="round"/></svg>
+              </span>
+              <strong>Montar Treino</strong>
+              <small>Monte e salve sequências</small>
+            </button>
+            <button class="home-app-card" data-action="navigate" data-target-view="lessons">
+              <span class="home-card-art lesson-art" aria-hidden="true">
+                <svg viewBox="0 0 96 96" role="img"><path d="M20 28h56M20 48h56M20 68h36" stroke="currentColor" stroke-width="7" stroke-linecap="round"/><circle cx="24" cy="28" r="6" fill="currentColor"/><circle cx="24" cy="48" r="6" fill="currentColor"/><circle cx="24" cy="68" r="6" fill="currentColor"/></svg>
+              </span>
+              <strong>Planos</strong>
+              <small>Aulas prontas por objetivo</small>
+            </button>
+            <button class="home-app-card" data-action="navigate" data-target-view="favorites">
+              <span class="home-card-art favorite-art" aria-hidden="true">
+                <svg viewBox="0 0 96 96" role="img"><path d="M48 74 26 51c-10-11-4-29 11-29 6 0 10 3 11 6 2-3 6-6 12-6 15 0 21 18 10 29L48 74Z" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"/></svg>
+              </span>
+              <strong>Favoritos</strong>
+              <small>Exercícios e planos salvos</small>
+            </button>
+            <button class="home-app-card" data-action="navigate" data-target-view="evolution">
+              <span class="home-card-art evolution-art" aria-hidden="true">
+                <svg viewBox="0 0 96 96" role="img"><path d="M21 72h54" stroke="currentColor" stroke-width="7" stroke-linecap="round"/><path d="M30 63 45 48l10 10 20-27" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <strong>Evolução</strong>
+              <small>Planos de 4, 8 e 12 semanas</small>
+            </button>
+            <button class="home-app-card" data-action="navigate" data-target-view="settings">
+              <span class="home-card-art audio-art" aria-hidden="true">
+                <svg viewBox="0 0 96 96" role="img"><path d="M25 57h14l18 14V25L39 39H25v18Z" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"/><path d="M67 38c6 6 6 15 0 21" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/></svg>
+              </span>
+              <strong>Áudio</strong>
+              <small>Explicações para ouvir na quadra</small>
+            </button>
+          </div>
+        </section>
+        <div class="section-heading compact-heading">
+          <div>
+            <h2>Resumo do produto</h2>
+            <p>Banco completo para treino, aula e evolução.</p>
+          </div>
+        </div>
+        <div class="stats-grid" id="dashboardStats">
+          <div class="stat-card"><strong>120</strong><span>Exercícios</span></div>
+          <div class="stat-card"><strong>50</strong><span>Planos de aula</span></div>
+          <div class="stat-card"><strong>3</strong><span>Planos de evolução</span></div>
+          <div class="stat-card"><strong>0</strong><span>Favoritos</span></div>
+          <div class="stat-card"><strong>0</strong><span>Treinos salvos</span></div>
+          <div class="stat-card"><strong>11 min</strong><span>Tempo médio</span></div>
+        </div>
+        <details class="insights-accordion">
+          <summary>Ver distribuição do banco</summary>
+          <div class="dashboard-grid">
+          <section class="panel insight-panel">
+            <div class="panel-heading">
+              <h3>Distribuição por nível</h3>
+            </div>
+            <div id="levelChart" class="bar-list">
+              <div class="bar-row"><span class="bar-label">Iniciante</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span><strong>100</strong></div>
+              <div class="bar-row"><span class="bar-label">Intermediário</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span><strong>100</strong></div>
+              <div class="bar-row"><span class="bar-label">Avançado</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span><strong>100</strong></div>
+            </div>
+          </section>
+          <section class="panel insight-panel">
+            <div class="panel-heading">
+              <h3>Distribuição por tipo</h3>
+            </div>
+            <div id="typeChart" class="bar-list">
+              <div class="bar-row"><span class="bar-label">Com bola</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span><strong>202</strong></div>
+              <div class="bar-row"><span class="bar-label">Sem bola</span><span class="bar-track"><span class="bar-fill" style="width:49%"></span></span><strong>98</strong></div>
+            </div>
+          </section>
+          <section class="panel wide insight-panel">
+            <div class="panel-heading">
+              <h3>Categorias mais presentes</h3>
+            </div>
+            <div id="categoryChart" class="bar-list">
+              <div class="bar-row"><span class="bar-label">Aquecimento</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span><strong>15</strong></div>
+              <div class="bar-row"><span class="bar-label">Mobilidade</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span><strong>15</strong></div>
+              <div class="bar-row"><span class="bar-label">Coordenação</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span><strong>15</strong></div>
+              <div class="bar-row"><span class="bar-label">Deslocamento na areia</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span><strong>15</strong></div>
+              <div class="bar-row"><span class="bar-label">Preparação física</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span><strong>15</strong></div>
+              <div class="bar-row"><span class="bar-label">Técnica de saque</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span><strong>15</strong></div>
+            </div>
+          </section>
+          </div>
+        </details>
+      </section>
+
+      <section class="view" id="exercises-view" aria-labelledby="exercises-heading">
+        <button class="view-back-home" type="button" data-action="navigate" data-target-view="dashboard">Voltar ao início</button>
+        <div class="section-heading">
+          <div>
+            <h2 id="exercises-heading">Banco de exercícios</h2>
+            <p id="exerciseCount">Carregando exercícios.</p>
+          </div>
+          <div class="inline-actions exercise-toolbar">
+            <button class="button secondary" id="openFiltersButton" type="button">Filtrar</button>
+            <button class="button ghost" id="clearFiltersButton" type="button">Limpar</button>
+          </div>
+        </div>
+        <div class="mobile-search">
+          <label>
+            <span>Busca rápida</span>
+            <input id="mobileFilterSearch" type="search" aria-label="Busca rápida por nome ou código do exercício">
+          </label>
+        </div>
+        <div class="active-filter-chips" id="activeFilterChips" aria-live="polite"></div>
+        <form class="filters" id="exerciseFilters">
+          <div class="filter-panel-header">
+            <div>
+              <strong>Filtros</strong>
+              <span>Refine o banco premium</span>
+            </div>
+            <button class="button ghost small" type="button" data-action="close-filters">Fechar</button>
+          </div>
+          <label>
+            <span>Busca</span>
+            <input id="filterSearch" type="search" aria-label="Busca por código, nome, objetivo ou tag">
+          </label>
+          <label>
+            <span>Nível</span>
+            <select id="filterLevel"></select>
+          </label>
+          <label>
+            <span>Tipo</span>
+            <select id="filterType"></select>
+          </label>
+          <label>
+            <span>Categoria</span>
+            <select id="filterCategory"></select>
+          </label>
+          <label>
+            <span>Duração</span>
+            <select id="filterDuration">
+              <option value="">Todas</option>
+              <option value="0-8">Até 8 min</option>
+              <option value="9-12">9 a 12 min</option>
+              <option value="13-20">13 a 20 min</option>
+              <option value="21+">21+ min</option>
+            </select>
+          </label>
+          <label>
+            <span>Intensidade</span>
+            <select id="filterIntensity"></select>
+          </label>
+          <label>
+            <span>Indicado para</span>
+            <select id="filterIndicated"></select>
+          </label>
+          <label>
+            <span>Tags</span>
+            <input id="filterTag" list="tagOptions" aria-label="Filtro por tag">
+            <datalist id="tagOptions"></datalist>
+          </label>
+        </form>
+        <div class="card-grid" id="exerciseGrid"></div>
+      </section>
+
+      <section class="view" id="favorites-view" aria-labelledby="favorites-heading">
+        <button class="view-back-home" type="button" data-action="navigate" data-target-view="dashboard">Voltar ao início</button>
+        <div class="section-heading">
+          <div>
+            <h2 id="favorites-heading">Favoritos</h2>
+            <p id="favoriteCount">Itens marcados para acesso rápido.</p>
+          </div>
+        </div>
+        <div class="favorite-segments" role="tablist" aria-label="Filtrar favoritos">
+          <button class="favorite-segment is-active" type="button" data-action="set-favorite-filter" data-filter="exercises" role="tab" aria-selected="true">Exercícios</button>
+          <button class="favorite-segment" type="button" data-action="set-favorite-filter" data-filter="plans" role="tab" aria-selected="false">Planos</button>
+        </div>
+        <div class="card-grid" id="favoriteGrid"></div>
+      </section>
+
+      <section class="view" id="builder-view" aria-labelledby="builder-heading">
+        <button class="view-back-home" type="button" data-action="navigate" data-target-view="dashboard">Voltar ao início</button>
+        <div class="section-heading">
+          <div>
+            <h2 id="builder-heading">Montador de treino</h2>
+            <p>Organize exercícios, salve treinos e exporte um roteiro de quadra.</p>
+          </div>
+          <div class="inline-actions" id="builderHeaderActions">
+            <button class="button ghost danger" data-action="clear-current-workout">Limpar treino</button>
+          </div>
+        </div>
+        <div class="builder-layout" id="workoutBuilderWorkspace">
+          <section class="panel">
+            <div class="form-grid compact">
+              <label>
+                <span>Nome do treino</span>
+                <input id="workoutName" type="text" aria-label="Nome do treino">
+              </label>
+              <label>
+                <span>Objetivo</span>
+                <input id="workoutGoal" type="text" aria-label="Objetivo do treino">
+              </label>
+            </div>
+            <div id="currentWorkoutSummary" class="workout-summary"></div>
+            <div class="workout-builder-section">
+              <div class="workout-section-heading">
+                <span class="eyebrow">Sequência do treino</span>
+                <h3>Exercícios do treino</h3>
+              </div>
+              <div id="currentWorkoutList" class="workout-exercise-list"></div>
+            </div>
+            <div class="inline-actions">
+              <button class="button primary" data-action="save-current-workout">Salvar treino</button>
+              <button class="button secondary" data-action="navigate" data-target-view="exercises">Adicionar exercícios</button>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>Treinos salvos</h3>
+            </div>
+            <div id="savedWorkoutList" class="stack-list"></div>
+            <div id="savedWorkoutOpenPanel"></div>
+          </section>
+        </div>
+        <section class="workout-progress-screen" id="savedWorkoutProgressView" hidden></section>
+      </section>
+
+      <section class="view" id="lessons-view" aria-labelledby="lessons-heading">
+        <button class="view-back-home" type="button" data-action="navigate" data-target-view="dashboard">Voltar ao início</button>
+        <div class="section-heading">
+          <div>
+            <h2 id="lessons-heading">Planos de aula</h2>
+            <p id="lessonCount">Planos prontos para aplicar ou adaptar.</p>
+          </div>
+          <div class="inline-actions lesson-toolbar">
+            <button class="button secondary" id="openLessonFiltersButton" type="button">Filtrar</button>
+            <button class="button ghost" id="clearLessonFiltersButton" type="button">Limpar</button>
+          </div>
+        </div>
+        <form class="filters small" id="lessonFilters">
+          <div class="filter-panel-header">
+            <div>
+              <strong>Filtros</strong>
+              <span>Refine os planos prontos</span>
+            </div>
+            <button class="button ghost small" type="button" data-action="close-filters">Fechar</button>
+          </div>
+          <label>
+            <span>Busca</span>
+            <input id="lessonSearch" type="search" aria-label="Busca por nome, objetivo ou tag">
+          </label>
+          <label>
+            <span>Nível</span>
+            <select id="lessonLevel"></select>
+          </label>
+          <label>
+            <span>Público</span>
+            <select id="lessonAudience"></select>
+          </label>
+          <label>
+            <span>Duração</span>
+            <select id="lessonDuration">
+              <option value="">Todas</option>
+              <option value="0-45">Até 45 min</option>
+              <option value="46-60">46 a 60 min</option>
+              <option value="61+">61 min ou mais</option>
+            </select>
+          </label>
+          <label>
+            <span>Intensidade</span>
+            <select id="lessonIntensity"></select>
+          </label>
+        </form>
+        <div class="card-grid" id="lessonGrid"></div>
+      </section>
+
+      <section class="view" id="evolution-view" aria-labelledby="evolution-heading">
+        <button class="view-back-home" type="button" data-action="navigate" data-target-view="dashboard">Voltar ao início</button>
+        <div class="section-heading">
+          <div>
+            <h2 id="evolution-heading">Planos de evolução</h2>
+            <p>Progressões de 4, 8 e 12 semanas para orientar a evolução.</p>
+          </div>
+        </div>
+        <div class="plan-list" id="evolutionGrid"></div>
+      </section>
+
+      <section class="view" id="settings-view" aria-labelledby="settings-heading">
+        <button class="view-back-home" type="button" data-action="navigate" data-target-view="dashboard">Voltar ao início</button>
+        <div class="section-heading">
+          <div>
+            <h2 id="settings-heading">Áudio explicativo</h2>
+            <p>Preferências salvas localmente para ouvir as explicações na quadra.</p>
+          </div>
+        </div>
+        <section class="panel settings-panel">
+          <label>
+            <span>Velocidade da voz</span>
+            <input id="audioRate" type="range" min="0.7" max="1.5" step="0.1">
+            <output id="audioRateValue"></output>
+          </label>
+          <label>
+            <span>Volume</span>
+            <input id="audioVolume" type="range" min="0" max="1" step="0.05">
+            <output id="audioVolumeValue"></output>
+          </label>
+          <div class="inline-actions">
+            <button class="button secondary" data-action="test-audio">Testar áudio</button>
+            <button class="button ghost" data-action="stop-audio">Parar áudio</button>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-root" id="modalRoot" hidden></div>
+  <div class="mobile-filter-backdrop" id="filterBackdrop" hidden></div>
+  <nav class="bottom-nav" aria-label="Navegação inferior">
+    <button class="bottom-nav-button active" data-view="dashboard"><span>Início</span></button>
+    <button class="bottom-nav-button" data-view="exercises"><span>Exercícios</span></button>
+    <button class="bottom-nav-button" data-view="builder"><span>Treino</span></button>
+    <button class="bottom-nav-button" data-view="lessons"><span>Planos</span></button>
+    <button class="bottom-nav-button" data-view="evolution"><span>Evolução</span></button>
+  </nav>
+  <div class="mobile-workout-bar" id="mobileWorkoutBar">
+    <div>
+      <strong id="mobileWorkoutCount">0 exercícios</strong>
+      <span id="mobileWorkoutDuration">0 min</span>
+    </div>
+    <button class="button primary small" data-action="navigate" data-target-view="builder">Ver treino</button>
+  </div>
+  <button class="scroll-top-button" type="button" data-action="scroll-top" aria-label="Voltar ao topo">
+    <span aria-hidden="true">&uarr;</span>
+  </button>
+  <div class="toast-root" id="toastRoot" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
