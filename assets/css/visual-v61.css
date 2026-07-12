@@ -6141,88 +6141,6 @@ body.dark-mode .auth-password-toggle {
   cursor: wait !important;
 }
 
-.auth-account-actions .button[data-auth-action="logout-all"] {
-  color: #0b5962 !important;
-  background: rgba(0, 128, 139, 0.08) !important;
-  border-color: rgba(0, 128, 139, 0.2) !important;
-}
-
-html.dark-mode .auth-account-actions .button[data-auth-action="logout-all"],
-body.dark-mode .auth-account-actions .button[data-auth-action="logout-all"] {
-  color: #dff8f7 !important;
-  background: rgba(43, 220, 214, 0.1) !important;
-  border-color: rgba(43, 220, 214, 0.24) !important;
-}
-
-.auth-confirm-backdrop {
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 9999 !important;
-  display: grid !important;
-  place-items: center !important;
-  padding: 18px !important;
-  background: rgba(5, 17, 20, 0.48) !important;
-  backdrop-filter: blur(8px) !important;
-}
-
-.auth-confirm-card {
-  width: min(420px, 100%) !important;
-  border: 1px solid rgba(8, 41, 47, 0.14) !important;
-  border-radius: 24px !important;
-  background: rgba(255, 255, 255, 0.96) !important;
-  box-shadow: 0 24px 70px rgba(5, 17, 20, 0.22) !important;
-  padding: 24px !important;
-  color: var(--text) !important;
-}
-
-.auth-confirm-card h2 {
-  margin: 8px 0 8px !important;
-  font-size: clamp(1.45rem, 6vw, 2rem) !important;
-  line-height: 1.05 !important;
-}
-
-.auth-confirm-card p {
-  margin: 0 !important;
-  color: var(--muted) !important;
-  font-weight: 700 !important;
-  line-height: 1.45 !important;
-}
-
-.auth-confirm-actions {
-  display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
-  gap: 10px !important;
-  margin-top: 22px !important;
-}
-
-.auth-confirm-actions .button {
-  min-height: 48px !important;
-  border-radius: 15px !important;
-}
-
-html.dark-mode .auth-confirm-card,
-body.dark-mode .auth-confirm-card {
-  background: rgba(12, 28, 32, 0.97) !important;
-  border-color: rgba(255, 255, 255, 0.14) !important;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45) !important;
-}
-
-html.dark-mode .auth-confirm-card p,
-body.dark-mode .auth-confirm-card p {
-  color: rgba(238, 248, 248, 0.78) !important;
-}
-
-@media (max-width: 720px) {
-  .auth-confirm-card {
-    padding: 20px !important;
-    border-radius: 20px !important;
-  }
-
-  .auth-confirm-actions {
-    grid-template-columns: 1fr !important;
-  }
-}
-
 /* v108: limpeza visual, configuracoes e cards sem ilustracoes decorativas */
 .pwa-welcome {
   align-items: center !important;
@@ -6263,6 +6181,119 @@ body.dark-mode .auth-confirm-card p {
   max-width: none !important;
   width: 100% !important;
   text-align: center !important;
+}
+
+@media (min-width: 821px) {
+  .pwa-welcome-card.auth-login-card {
+    width: min(88vw, 350px) !important;
+    padding: 20px !important;
+    border-radius: 20px !important;
+  }
+
+  .auth-login-card .pwa-welcome-logo {
+    width: 48px !important;
+    height: 48px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .auth-login-card h1 {
+    font-size: 1.85rem !important;
+    line-height: 1.04 !important;
+    margin-bottom: 8px !important;
+  }
+
+  .auth-login-card p {
+    font-size: 0.86rem !important;
+    line-height: 1.38 !important;
+    margin-bottom: 10px !important;
+  }
+
+  .auth-login-card .auth-form {
+    gap: 10px !important;
+    margin-top: 12px !important;
+  }
+
+  .auth-login-card .auth-form input {
+    min-height: 44px !important;
+    border-radius: 13px !important;
+    font-size: 0.94rem !important;
+  }
+
+  .auth-login-card .auth-submit,
+  .auth-login-card .pwa-install-button,
+  .auth-login-card .pwa-web-button {
+    min-height: 44px !important;
+    border-radius: 13px !important;
+  }
+
+  .auth-login-card .auth-secondary-actions {
+    margin-top: 10px !important;
+  }
+}
+
+.pwa-welcome-card.auth-access-card {
+  width: min(92vw, 370px) !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: clamp(18px, 3.6vw, 24px) !important;
+  scrollbar-width: none !important;
+}
+
+.pwa-welcome-card.auth-access-card::-webkit-scrollbar {
+  display: none !important;
+}
+
+.auth-access-card .pwa-welcome-logo {
+  width: clamp(48px, 10vw, 56px) !important;
+  height: clamp(48px, 10vw, 56px) !important;
+  margin-bottom: 8px !important;
+}
+
+.auth-access-card h1 {
+  max-width: 13ch !important;
+  font-size: clamp(1.55rem, 5vw, 2.05rem) !important;
+  margin-bottom: 8px !important;
+}
+
+.auth-access-card p {
+  max-width: 30ch !important;
+  margin-bottom: 12px !important;
+  font-size: clamp(0.86rem, 2.2vw, 0.94rem) !important;
+  line-height: 1.38 !important;
+}
+
+.auth-access-card .auth-message {
+  margin: 4px 0 10px !important;
+  padding: 10px 12px !important;
+  border-radius: 14px !important;
+  font-size: 0.82rem !important;
+  line-height: 1.35 !important;
+}
+
+.auth-access-card .pwa-welcome-actions,
+.auth-access-card.auth-card .auth-actions {
+  gap: 10px !important;
+  margin-top: 6px !important;
+}
+
+.auth-access-card .pwa-install-button,
+.auth-access-card .pwa-web-button {
+  min-height: 44px !important;
+  border-radius: 14px !important;
+  font-size: 0.86rem !important;
+}
+
+.auth-access-card .auth-link-button {
+  margin-top: 10px !important;
+  font-size: 0.86rem !important;
+}
+
+@media (min-width: 821px) {
+  .pwa-welcome-card.auth-access-card {
+    width: min(88vw, 350px) !important;
+    padding: 20px !important;
+    border-radius: 20px !important;
+  }
 }
 
 .pwa-welcome p,

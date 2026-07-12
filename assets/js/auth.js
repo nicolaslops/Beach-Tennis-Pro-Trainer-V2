@@ -191,7 +191,7 @@
   function renderAccess(options = {}) {
     const setupWarning = configMessage();
     renderAuth(`
-      <div class="pwa-welcome-card auth-card">
+      <div class="pwa-welcome-card auth-card auth-access-card">
         <img class="pwa-welcome-logo" src="assets/images/logo-beach-tennis-192.png" alt="">
         <span class="eyebrow">Acesso do aluno</span>
         <h1 id="authTitle">Escolha como deseja acessar</h1>
@@ -517,7 +517,7 @@
   }
 
   function setLogoutButtonsBusy(activeButton, busy, text = "Saindo...") {
-    document.querySelectorAll("[data-auth-action='logout'], [data-auth-action='logout-all']").forEach((button) => {
+    document.querySelectorAll("[data-auth-action='logout']").forEach((button) => {
       if (busy) {
         button.dataset.originalText ||= button.textContent;
         button.disabled = true;
@@ -526,41 +526,6 @@
         button.disabled = false;
         if (button.dataset.originalText) button.textContent = button.dataset.originalText;
       }
-    });
-  }
-
-  function confirmLogoutAll() {
-    return new Promise((resolve) => {
-      const existing = document.querySelector(".auth-confirm-backdrop");
-      if (existing) existing.remove();
-
-      const backdrop = document.createElement("div");
-      backdrop.className = "auth-confirm-backdrop";
-      backdrop.innerHTML = `
-        <div class="auth-confirm-card" role="dialog" aria-modal="true" aria-labelledby="authConfirmTitle">
-          <span class="eyebrow">Segurança da conta</span>
-          <h2 id="authConfirmTitle">Sair de todos os dispositivos?</h2>
-          <p>Deseja sair da sua conta em todos os dispositivos?</p>
-          <div class="auth-confirm-actions">
-            <button class="button ghost" type="button" data-auth-confirm="cancel">Cancelar</button>
-            <button class="button primary" type="button" data-auth-confirm="confirm">Sair de todos</button>
-          </div>
-        </div>
-      `;
-
-      const finish = (value) => {
-        backdrop.remove();
-        resolve(value);
-      };
-
-      backdrop.addEventListener("click", (event) => {
-        const action = event.target.closest("[data-auth-confirm]")?.dataset.authConfirm;
-        if (action === "confirm") finish(true);
-        if (action === "cancel" || event.target === backdrop) finish(false);
-      });
-
-      document.body.appendChild(backdrop);
-      backdrop.querySelector("[data-auth-confirm='cancel']")?.focus();
     });
   }
 
@@ -893,19 +858,6 @@
     state.logoutInProgress = false;
   }
 
-  async function logoutEverywhere(activeButton = null) {
-    if (state.logoutInProgress) return;
-    const confirmed = await confirmLogoutAll();
-    if (!confirmed) return;
-    await logout({
-      scope: "global",
-      route: ROUTES.login,
-      message: "Você saiu da conta em todos os dispositivos.",
-      type: "success",
-      loadingText: "Saindo..."
-    }, activeButton);
-  }
-
   function injectAccountActions() {
     const settingsPanel = document.querySelector("#settings-view .settings-panel");
     if (!settingsPanel || settingsPanel.querySelector(".auth-account-actions")) return;
@@ -913,7 +865,6 @@
     actions.className = "inline-actions auth-account-actions";
     actions.innerHTML = `
       <button class="button ghost danger" type="button" data-auth-action="logout">Sair da conta</button>
-      <button class="button secondary danger" type="button" data-auth-action="logout-all">Sair de todos os dispositivos</button>
     `;
     settingsPanel.appendChild(actions);
   }
@@ -935,7 +886,6 @@
     if (action === "choose-app") handleChooseApp();
     if (action === "choose-web") handleChooseWeb();
     if (action === "logout") logout({}, actionButton);
-    if (action === "logout-all") logoutEverywhere(actionButton);
     if (action === "toggle-password") {
       const control = actionButton.closest(".auth-password-control");
       const input = control?.querySelector("input");
