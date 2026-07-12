@@ -16,13 +16,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css?v=107">
-  <link rel="stylesheet" href="assets/css/visual-v61.css?v=107">
-  <script defer src="assets/js/env.js?v=107"></script>
+  <link rel="stylesheet" href="assets/css/style.css?v=108">
+  <link rel="stylesheet" href="assets/css/visual-v61.css?v=108">
+  <script defer src="assets/js/env.js?v=108"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script defer src="assets/js/pwa.js?v=107"></script>
-  <script defer src="assets/js/auth.js?v=107"></script>
-  <script defer src="assets/js/app.js?v=107"></script>
+  <script defer src="assets/js/pwa.js?v=108"></script>
+  <script defer src="assets/js/auth.js?v=108"></script>
+  <script defer src="assets/js/app.js?v=108"></script>
 </head>
 <body class="auth-locked auth-pending">
   <section class="pwa-welcome" id="pwaWelcome" aria-labelledby="pwaWelcomeTitle">
@@ -71,7 +71,7 @@
         <button class="nav-button" data-view="builder">Montador</button>
         <button class="nav-button" data-view="lessons">Planos</button>
         <button class="nav-button" data-view="evolution">Evolução</button>
-        <button class="nav-button" data-view="settings">Áudio</button>
+        <button class="nav-button" data-view="settings">Configurações</button>
       </nav>
     </aside>
 
@@ -162,11 +162,11 @@
               <small>Planos de 4, 8 e 12 semanas</small>
             </button>
             <button class="home-app-card" data-action="navigate" data-target-view="settings">
-              <span class="home-card-art audio-art" aria-hidden="true">
-                <svg viewBox="0 0 96 96" role="img"><path d="M25 57h14l18 14V25L39 39H25v18Z" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"/><path d="M67 38c6 6 6 15 0 21" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/></svg>
+              <span class="home-card-art settings-art" aria-hidden="true">
+                <svg viewBox="0 0 96 96" role="img"><circle cx="48" cy="48" r="11" fill="none" stroke="currentColor" stroke-width="7"/><path d="M48 18v10M48 68v10M18 48h10M68 48h10M27 27l7 7M62 62l7 7M69 27l-7 7M34 62l-7 7" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/></svg>
               </span>
-              <strong>Áudio</strong>
-              <small>Explicações para ouvir na quadra</small>
+              <strong>Configurações</strong>
+              <small>Áudio, conta e preferências</small>
             </button>
           </div>
         </section>
@@ -419,11 +419,15 @@
         <button class="view-back-home" type="button" data-action="navigate" data-target-view="dashboard">Voltar ao início</button>
         <div class="section-heading">
           <div>
-            <h2 id="settings-heading">Áudio explicativo</h2>
-            <p>Preferências salvas localmente para ouvir as explicações na quadra.</p>
+            <h2 id="settings-heading">Configurações</h2>
+            <p>Ajustes de áudio e conta do aplicativo.</p>
           </div>
         </div>
         <section class="panel settings-panel">
+          <div class="settings-section-heading">
+            <span class="eyebrow">Ajustes de áudio</span>
+            <h3>Áudio explicativo</h3>
+          </div>
           <label>
             <span>Velocidade da voz</span>
             <input id="audioRate" type="range" min="0.7" max="1.5" step="0.1">

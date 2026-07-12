@@ -6128,15 +6128,6 @@ body.dark-mode .auth-password-toggle {
 }
 
 /* v106: ações de conta e sessão única */
-.auth-topbar-actions {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-  gap: 10px !important;
-  flex-wrap: wrap !important;
-}
-
-.auth-topbar-actions .button,
 .auth-account-actions .button {
   min-height: 42px !important;
   padding: 0 16px !important;
@@ -6145,32 +6136,17 @@ body.dark-mode .auth-password-toggle {
   white-space: nowrap !important;
 }
 
-.auth-topbar-actions .button:disabled,
 .auth-account-actions .button:disabled {
   opacity: 0.68 !important;
   cursor: wait !important;
 }
 
-.auth-topbar-actions .auth-exit-button {
-  color: var(--text) !important;
-  border-color: rgba(8, 41, 47, 0.18) !important;
-}
-
-.auth-topbar-actions .auth-exit-all-button,
 .auth-account-actions .button[data-auth-action="logout-all"] {
   color: #0b5962 !important;
   background: rgba(0, 128, 139, 0.08) !important;
   border-color: rgba(0, 128, 139, 0.2) !important;
 }
 
-html.dark-mode .auth-topbar-actions .auth-exit-button,
-body.dark-mode .auth-topbar-actions .auth-exit-button {
-  color: #eef8f8 !important;
-  border-color: rgba(255, 255, 255, 0.16) !important;
-}
-
-html.dark-mode .auth-topbar-actions .auth-exit-all-button,
-body.dark-mode .auth-topbar-actions .auth-exit-all-button,
 html.dark-mode .auth-account-actions .button[data-auth-action="logout-all"],
 body.dark-mode .auth-account-actions .button[data-auth-action="logout-all"] {
   color: #dff8f7 !important;
@@ -6237,16 +6213,6 @@ body.dark-mode .auth-confirm-card p {
 }
 
 @media (max-width: 720px) {
-  .auth-topbar-actions {
-    width: 100% !important;
-    justify-content: flex-start !important;
-  }
-
-  .auth-topbar-actions .button {
-    flex: 1 1 auto !important;
-    min-width: 112px !important;
-  }
-
   .auth-confirm-card {
     padding: 20px !important;
     border-radius: 20px !important;
@@ -6254,5 +6220,250 @@ body.dark-mode .auth-confirm-card p {
 
   .auth-confirm-actions {
     grid-template-columns: 1fr !important;
+  }
+}
+
+/* v108: limpeza visual, configuracoes e cards sem ilustracoes decorativas */
+.pwa-welcome {
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 100dvh !important;
+  padding: clamp(12px, 3vw, 24px) !important;
+}
+
+.pwa-welcome-card,
+.pwa-welcome-card.auth-card {
+  width: min(92vw, 410px) !important;
+  max-height: calc(100dvh - 28px) !important;
+  overflow-y: auto !important;
+  padding: clamp(18px, 3.6vw, 28px) !important;
+  border-radius: 22px !important;
+  gap: 8px !important;
+}
+
+.pwa-welcome-logo,
+.auth-card .pwa-welcome-logo {
+  width: clamp(52px, 10vw, 66px) !important;
+  height: clamp(52px, 10vw, 66px) !important;
+  margin: 0 auto 10px !important;
+}
+
+.pwa-welcome h1,
+.auth-card h1,
+.pwa-welcome-card.auth-card h1 {
+  max-width: 16ch !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  font-size: clamp(1.55rem, 5vw, 2.45rem) !important;
+  line-height: 1.02 !important;
+  text-align: center !important;
+}
+
+.auth-login-card h1 {
+  max-width: none !important;
+  width: 100% !important;
+  text-align: center !important;
+}
+
+.pwa-welcome p,
+.auth-card p,
+.pwa-welcome-card.auth-card p {
+  margin: 6px auto 14px !important;
+  font-size: clamp(0.88rem, 2.4vw, 0.98rem) !important;
+  line-height: 1.45 !important;
+  text-align: center !important;
+}
+
+.auth-form,
+.auth-secondary-actions {
+  text-align: left !important;
+}
+
+body:not([data-view="dashboard"]) .topbar {
+  display: none !important;
+}
+
+.view-back-home {
+  display: none !important;
+}
+
+.view:not(#dashboard-view) {
+  padding-top: 0 !important;
+}
+
+.view:not(#dashboard-view) > .section-heading,
+#favorites-view > .section-heading,
+#settings-view > .section-heading {
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  margin: 0 0 14px !important;
+  padding: 0 !important;
+}
+
+.view:not(#dashboard-view) > .section-heading h2 {
+  display: block !important;
+  margin: 0 !important;
+}
+
+.view:not(#dashboard-view) > .section-heading p {
+  margin-top: 4px !important;
+}
+
+.clean-list-card {
+  display: block !important;
+  min-height: auto !important;
+  overflow: visible !important;
+}
+
+.clean-list-card > .card-media,
+.exercise-card > .card-media,
+.lesson-card > .card-media {
+  display: none !important;
+}
+
+.clean-list-card .card-content,
+.exercise-card.clean-list-card .card-content,
+.lesson-card.clean-list-card .card-content {
+  padding: clamp(16px, 4vw, 22px) !important;
+  display: grid !important;
+  gap: 12px !important;
+}
+
+.card-title-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: start !important;
+  gap: 12px !important;
+}
+
+.card-title-row .card-title {
+  margin: 0 !important;
+  min-width: 0 !important;
+  padding-right: 0 !important;
+}
+
+.card-favorite,
+.media-favorite.card-favorite {
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+  z-index: 2 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 42px !important;
+  min-width: 42px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(8, 41, 47, 0.14) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: #0a444c !important;
+  box-shadow: 0 10px 22px rgba(7, 33, 38, 0.08) !important;
+  font-size: 1.3rem !important;
+  line-height: 1 !important;
+}
+
+.card-favorite.is-active,
+.media-favorite.card-favorite.is-active {
+  color: #c34b44 !important;
+  background: #fff4f1 !important;
+  border-color: rgba(195, 75, 68, 0.22) !important;
+}
+
+html.dark-mode .card-favorite,
+body.dark-mode .card-favorite {
+  color: #e8fbfb !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+html.dark-mode .card-favorite.is-active,
+body.dark-mode .card-favorite.is-active {
+  color: #ffb2a8 !important;
+  background: rgba(255, 128, 116, 0.12) !important;
+  border-color: rgba(255, 128, 116, 0.26) !important;
+}
+
+.workout-card-main,
+.workout-progress-exercise-card .workout-card-main {
+  grid-template-columns: auto minmax(0, 1fr) !important;
+}
+
+.related-exercise-card {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+}
+
+.saved-workout-exercise {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+}
+
+.related-exercise-main {
+  min-width: 0 !important;
+}
+
+.settings-section-heading {
+  display: grid !important;
+  gap: 4px !important;
+  margin-bottom: 6px !important;
+}
+
+.settings-section-heading h3 {
+  margin: 0 !important;
+  color: var(--app-text) !important;
+  font-size: clamp(1.1rem, 4vw, 1.45rem) !important;
+  line-height: 1.1 !important;
+}
+
+.auth-account-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  margin-top: 18px !important;
+  padding-top: 18px !important;
+}
+
+@media (max-width: 820px) {
+  .main {
+    padding-top: 10px !important;
+  }
+
+  .view:not(#dashboard-view) > .section-heading,
+  #favorites-view > .section-heading,
+  #settings-view > .section-heading {
+    display: grid !important;
+    align-items: start !important;
+    gap: 10px !important;
+  }
+
+  .auth-account-actions .button {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .pwa-welcome-card,
+  .pwa-welcome-card.auth-card {
+    width: min(92vw, 360px) !important;
+    padding: 18px !important;
+    border-radius: 20px !important;
+  }
+
+  .pwa-welcome h1,
+  .auth-card h1,
+  .pwa-welcome-card.auth-card h1 {
+    font-size: clamp(1.42rem, 8vw, 2rem) !important;
+  }
+
+  .clean-list-card .card-content {
+    padding: 15px !important;
   }
 }

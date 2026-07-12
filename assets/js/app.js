@@ -45059,7 +45059,6 @@ class ModalManager {
     ].filter(Boolean).join(" ");
     return `
       <article class="related-exercise-card ${completed ? "is-complete" : ""}">
-        ${this.miniExerciseVisual(exercise, "related-exercise-thumb")}
         <div class="related-exercise-main">
           <strong>${escapeHTML(exercise.nome)}</strong>
           <span>${escapeHTML(titleCase(exercise.nivel))} | ${escapeHTML(exercise.categoria)} | ${escapeHTML(exercise.duracao_minutos)} min</span>
@@ -45073,22 +45072,7 @@ class ModalManager {
   }
 
   miniExerciseVisual(exercise, className = "") {
-    const cover = exercise && exercise.imagem_capa ? exerciseImageSrc(exercise) : "";
-    if (cover) {
-      return `
-        <div class="mini-exercise-visual has-real-cover ${className}" aria-hidden="true">
-          <img src="${escapeHTML(cover)}" alt="" loading="lazy">
-        </div>
-      `;
-    }
-    return `
-      <div class="mini-exercise-visual ${className} ${this.visualTone(exercise.categoria || exercise.nome)}" aria-hidden="true">
-        <span class="mini-net"></span>
-        <span class="mini-player mini-player-a"></span>
-        <span class="mini-player mini-player-b"></span>
-        <span class="mini-ball"></span>
-      </div>
-    `;
+    return "";
   }
 
   progressBar(percent, primary, secondary = "") {
@@ -45817,7 +45801,7 @@ class UIManager {
       builder: "Montador de treino",
       lessons: "Planos",
       evolution: "Evolução",
-      settings: "Áudio explicativo"
+      settings: "Configurações"
     };
   }
 
@@ -46313,14 +46297,7 @@ class UIManager {
   }
 
   miniExerciseVisual(exercise, className = "") {
-    return `
-      <div class="mini-exercise-visual ${className} ${this.visualTone(exercise.categoria || exercise.nome)}" aria-hidden="true">
-        <span class="mini-net"></span>
-        <span class="mini-player mini-player-a"></span>
-        <span class="mini-player mini-player-b"></span>
-        <span class="mini-ball"></span>
-      </div>
-    `;
+    return "";
   }
 
   visualTone(value = "") {
@@ -46332,22 +46309,17 @@ class UIManager {
 
   exerciseCard(exercise) {
     const favorite = this.app.storage.getFavoriteExercises().includes(exercise.id);
-    const cover = exercise && exercise.imagem_capa ? exerciseImageSrc(exercise) : "";
-    const media = cover
-      ? `<img class="exercise-card-image" src="${escapeHTML(cover)}" alt="${escapeHTML(exercise.nome)}" loading="lazy">`
-      : this.frontCardArt("", "", "exercise", `${exercise.nome} ${exercise.categoria} ${exercise.tipo} ${exercise.objetivo} ${exercise.tags ? safeArray(exercise.tags).join(" ") : ""}`);
     return `
-      <article class="exercise-card media-card">
-        <div class="card-media ${cover ? "has-real-cover" : ""} ${this.visualTone(exercise.categoria || exercise.nome)}">
-          ${media}
-          <button class="media-favorite ${favorite ? "is-active" : ""}" title="${favorite ? "Remover dos favoritos" : "Favoritar"}" aria-label="${favorite ? "Remover dos favoritos" : "Favoritar"}" aria-pressed="${favorite ? "true" : "false"}" data-action="favorite-exercise" data-id="${exercise.id}">${favorite ? "\u2665" : "\u2661"}</button>
-        </div>
+      <article class="exercise-card media-card clean-list-card">
         <div class="card-content">
+          <div class="card-title-row">
+            <h3 class="card-title">${escapeHTML(exercise.nome)}</h3>
+            <button class="media-favorite card-favorite ${favorite ? "is-active" : ""}" title="${favorite ? "Remover dos favoritos" : "Favoritar"}" aria-label="${favorite ? "Remover dos favoritos" : "Favoritar"}" aria-pressed="${favorite ? "true" : "false"}" data-action="favorite-exercise" data-id="${exercise.id}">${favorite ? "\u2665" : "\u2661"}</button>
+          </div>
           <div class="meta-row">
             ${this.pill(exercise.categoria, "coral")}
             ${this.pill(titleCase(exercise.nivel))}
           </div>
-          <h3 class="card-title">${escapeHTML(exercise.nome)}</h3>
           <div class="card-mini-meta">
             <span>${escapeHTML(exercise.duracao_minutos)} min</span>
             <span>${escapeHTML(titleCase(exercise.intensidade))}</span>
@@ -46370,19 +46342,18 @@ class UIManager {
     const blockCount = safeArray(plan.estrutura_da_aula).length;
     const label = progress.status === "concluido" ? "Ver plano" : "Abrir plano";
     return `
-      <article class="lesson-card media-card ${progress.status === "concluido" ? "is-complete" : ""}" data-action="open-plan" data-id="${plan.id}" role="button" aria-label="${escapeHTML(label)} ${escapeHTML(plan.nome)}">
-        <div class="card-media ${this.visualTone(plan.objetivo_principal || plan.nome)}">
-          ${this.frontCardArt("", "", "lesson", `${plan.nome} ${plan.objetivo_principal}`)}
-          <button class="media-favorite ${favorite ? "is-active" : ""}" title="${favorite ? "Remover plano dos favoritos" : "Favoritar plano"}" aria-label="${favorite ? "Remover plano dos favoritos" : "Favoritar plano"}" aria-pressed="${favorite ? "true" : "false"}" data-action="favorite-plan" data-id="${plan.id}">${favorite ? "\u2665" : "\u2661"}</button>
-        </div>
+      <article class="lesson-card media-card clean-list-card ${progress.status === "concluido" ? "is-complete" : ""}" data-action="open-plan" data-id="${plan.id}" role="button" aria-label="${escapeHTML(label)} ${escapeHTML(plan.nome)}">
         <div class="card-content">
+          <div class="card-title-row">
+            <h3 class="card-title">${escapeHTML(plan.nome)}</h3>
+            <button class="media-favorite card-favorite ${favorite ? "is-active" : ""}" title="${favorite ? "Remover plano dos favoritos" : "Favoritar plano"}" aria-label="${favorite ? "Remover plano dos favoritos" : "Favoritar plano"}" aria-pressed="${favorite ? "true" : "false"}" data-action="favorite-plan" data-id="${plan.id}">${favorite ? "\u2665" : "\u2661"}</button>
+          </div>
           <div class="meta-row">
             ${this.pill(titleCase(plan.nivel))}
             ${this.pill(`${plan.duracao_total_minutos} min`, "coral")}
             ${progress.status === "em_andamento" ? this.pill("Em execu\u00e7\u00e3o", "active") : ""}
             ${index < 6 ? this.pill("Recomendado") : ""}
           </div>
-          <h3 class="card-title">${escapeHTML(plan.nome)}</h3>
           <div class="card-mini-meta">
             <span>${blockCount} blocos</span>
             <span>${exerciseCount} exercícios</span>

@@ -161,8 +161,8 @@
   function installButtonText() {
     const pwa = window.BTPT_PWA;
     if (pwa?.isStandalone) return "Abrir aplicativo";
-    if (pwa?.isIOS) return "📱 COMO BAIXAR NO IPHONE";
-    if (pwa?.canInstall || (pwa?.isAndroid && pwa?.isChromeLike)) return "📥 BAIXAR APLICATIVO";
+    if (pwa?.isIOS) return "Como baixar no iPhone";
+    if (pwa?.canInstall || (pwa?.isAndroid && pwa?.isChromeLike)) return "Baixar aplicativo";
     return "Usar como aplicativo";
   }
 
@@ -210,10 +210,10 @@
     const setupWarning = configMessage();
     const disabled = setupWarning ? "disabled" : "";
     renderAuth(`
-      <div class="pwa-welcome-card auth-card">
+      <div class="pwa-welcome-card auth-card auth-login-card">
         <img class="pwa-welcome-logo" src="assets/images/logo-beach-tennis-192.png" alt="">
         <span class="eyebrow">Área exclusiva</span>
-        <h1 id="authTitle">Entrar no app</h1>
+        <h1 id="authTitle">Entrar no App</h1>
         <p>Use o e-mail da compra e a senha enviada para acessar seus treinos.</p>
         ${messageHTML(options.message || setupWarning, options.type || (setupWarning ? "warning" : "info"))}
         <form class="auth-form" data-auth-form="login">
@@ -907,17 +907,6 @@
   }
 
   function injectAccountActions() {
-    const topbar = document.querySelector(".topbar");
-    if (topbar && !topbar.querySelector(".auth-topbar-actions")) {
-      const topbarActions = document.createElement("div");
-      topbarActions.className = "topbar-actions auth-topbar-actions";
-      topbarActions.innerHTML = `
-        <button class="button ghost auth-exit-button" type="button" data-auth-action="logout">Sair</button>
-        <button class="button secondary auth-exit-all-button" type="button" data-auth-action="logout-all">Sair de todos</button>
-      `;
-      topbar.appendChild(topbarActions);
-    }
-
     const settingsPanel = document.querySelector("#settings-view .settings-panel");
     if (!settingsPanel || settingsPanel.querySelector(".auth-account-actions")) return;
     const actions = document.createElement("div");
