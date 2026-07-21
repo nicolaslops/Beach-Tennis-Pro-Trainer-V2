@@ -6649,3 +6649,139 @@ body.dark-mode .card-favorite.is-active {
     padding: 15px 16px !important;
   }
 }
+
+/* v113: detalhe do exercicio com acoes mais respiradas e objetivo baseado na animacao */
+.exercise-visual-card.has-animation-snapshot {
+  display: grid !important;
+  grid-template-rows: minmax(0, 1fr) auto auto !important;
+  gap: 9px !important;
+  min-height: 272px !important;
+  padding: 10px !important;
+  background:
+    radial-gradient(circle at 84% 10%, rgba(255, 188, 110, 0.34), transparent 26%),
+    linear-gradient(150deg, #f7dfab 0%, #e7bf77 48%, #0d454d 49%, #071417 100%) !important;
+}
+
+.objective-snapshot-stage {
+  position: relative !important;
+  min-height: 222px !important;
+  overflow: hidden !important;
+  background: #efd39b !important;
+  border: 1px solid rgba(255, 255, 255, 0.36) !important;
+  border-radius: 15px !important;
+  box-shadow: inset 0 0 0 1px rgba(7, 23, 28, 0.08) !important;
+}
+
+.objective-snapshot-stage .objective-snapshot-svg,
+.objective-snapshot-stage .animated-diagram-svg {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 222px !important;
+}
+
+.exercise-visual-card.has-animation-snapshot .anim-player.is-moving,
+.exercise-visual-card.has-animation-snapshot .anim-ball.is-moving {
+  animation: none !important;
+  transform: translate(var(--to-x), var(--to-y)) !important;
+}
+
+.exercise-visual-card.has-animation-snapshot .anim-legend {
+  display: none !important;
+}
+
+.exercise-visual-card.has-animation-snapshot .anim-arrow text,
+.exercise-visual-card.has-animation-snapshot .anim-cone text,
+.exercise-visual-card.has-animation-snapshot .anim-zone text {
+  font-size: 9.5px !important;
+}
+
+.exercise-visual-card.has-animation-snapshot .exercise-visual-meta {
+  position: static !important;
+  inset: auto !important;
+  z-index: 2 !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  color: #ffffff !important;
+}
+
+.objective-visual-tip {
+  display: block !important;
+  margin: -2px 2px 1px !important;
+  color: rgba(255, 255, 255, 0.86) !important;
+  font-size: 0.74rem !important;
+  font-weight: 850 !important;
+  line-height: 1.25 !important;
+}
+
+html.dark-mode .exercise-visual-card.has-animation-snapshot {
+  background:
+    radial-gradient(circle at 84% 10%, rgba(255, 188, 110, 0.22), transparent 26%),
+    linear-gradient(150deg, #223940 0%, #123138 48%, #082126 49%, #050c0f 100%) !important;
+}
+
+@media (max-width: 820px) {
+  .exercise-detail-modal .modal-header,
+  .related-exercise-sheet .modal-header {
+    padding-right: 16px !important;
+  }
+
+  .exercise-detail-modal .modal-header > div:first-child,
+  .related-exercise-sheet .modal-header > div:first-child {
+    padding-right: 94px !important;
+  }
+
+  .exercise-detail-modal .desktop-detail-actions,
+  .related-exercise-sheet .desktop-detail-actions {
+    width: 100% !important;
+    margin-top: 8px !important;
+    padding-top: 8px !important;
+    padding-right: 0 !important;
+    border-top: 1px solid color-mix(in srgb, var(--app-border) 72%, transparent) !important;
+  }
+
+  .exercise-detail-modal .mobile-close-button,
+  .related-exercise-sheet .mobile-close-button {
+    top: 16px !important;
+    right: 16px !important;
+    z-index: 4 !important;
+  }
+
+  .exercise-visual-card.has-animation-snapshot {
+    min-height: 250px !important;
+  }
+
+  .objective-snapshot-stage,
+  .objective-snapshot-stage .objective-snapshot-svg,
+  .objective-snapshot-stage .animated-diagram-svg {
+    min-height: 210px !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .exercise-detail-modal .modal-header > div:first-child,
+  .related-exercise-sheet .modal-header > div:first-child {
+    padding-right: 88px !important;
+  }
+
+  .exercise-detail-modal .desktop-detail-actions,
+  .related-exercise-sheet .desktop-detail-actions {
+    margin-top: 10px !important;
+    padding-top: 10px !important;
+  }
+
+  .exercise-visual-card.has-animation-snapshot {
+    min-height: 238px !important;
+    padding: 8px !important;
+  }
+
+  .objective-snapshot-stage,
+  .objective-snapshot-stage .objective-snapshot-svg,
+  .objective-snapshot-stage .animated-diagram-svg {
+    min-height: 196px !important;
+  }
+
+  .objective-visual-tip {
+    font-size: 0.69rem !important;
+  }
+}

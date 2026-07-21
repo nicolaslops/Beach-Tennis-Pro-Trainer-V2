@@ -84,7 +84,7 @@ purchase_status = approved
 must_change_password = false
 ```
 
-Se `must_change_password = true`, o usuário vai para `/primeiro-acesso`.
+Se `must_change_password = true`, o usuário vai para `/primeiro-acesso` para criar a própria senha pelo convite oficial do Supabase.
 
 Se não existir compra ativa, o app encerra a sessão e mostra uma mensagem amigável.
 
@@ -117,14 +117,17 @@ Validações aplicadas:
 - prevenção de envio repetido;
 - mensagem para link inválido ou expirado.
 
-## Primeiro acesso
+## Primeiro acesso por convite
 
 A tela `/primeiro-acesso` exige sessão autenticada.
 
-Depois de alterar a senha temporária, o app chama:
+O usuário chega a essa tela pelo link enviado por `supabase.auth.admin.inviteUserByEmail`.
+Depois de criar a própria senha, o app chama:
 
 ```js
+supabase.auth.updateUser({ password: novaSenha });
 supabase.rpc("complete_first_access");
+supabase.rpc("register_current_session");
 ```
 
 Essa função deve alterar somente `must_change_password`.

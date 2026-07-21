@@ -1,15 +1,15 @@
-﻿const CACHE_NAME = "beach-tennis-pro-trainer-v99";
+﻿const CACHE_NAME = "beach-tennis-pro-trainer-v114";
 
 // Arquivos principais para funcionamento offline.
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./assets/css/style.css?v=99",
-  "./assets/css/visual-v61.css?v=99",
-  "./assets/js/app.js?v=99",
-  "./assets/js/pwa.js?v=99",
-  "./assets/js/auth.js?v=99",
-  "./assets/js/env.js?v=99",
+  "./assets/css/style.css?v=114",
+  "./assets/css/visual-v61.css?v=114",
+  "./assets/js/app.js?v=114",
+  "./assets/js/pwa.js?v=114",
+  "./assets/js/auth.js?v=114",
+  "./assets/js/env.js?v=114",
   "./manifest.json",
   "./assets/icons/favicon.png",
   "./assets/icons/icon-192.png",
@@ -63,5 +63,6 @@ self.addEventListener("fetch", (event) => {
       }).catch(() => caches.match(event.request))
   );
 });
+
 
 

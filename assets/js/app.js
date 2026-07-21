@@ -45116,6 +45116,9 @@ class ModalManager {
   }
 
   exerciseVisualCard(exercise) {
+    const animationSnapshot = this.exerciseAnimationSnapshotCard(exercise);
+    if (animationSnapshot) return animationSnapshot;
+
     const cover = exercise && exercise.imagem_capa ? exerciseImageSrc(exercise) : "";
     if (cover) {
       return `
@@ -45147,6 +45150,52 @@ class ModalManager {
           <span>${escapeHTML(titleCase(exercise.tipo || "Exercício"))}</span>
         </div>
       </div>
+    `;
+  }
+
+  exerciseAnimationSnapshotCard(exercise) {
+    const animation = normalizedExerciseAnimation(exercise);
+    const frames = safeArray(animation && animation.frames);
+    if (!animation || !frames.length) return "";
+
+    const frameIndex = frames.reduce((bestIndex, frame, index) => {
+      const score =
+        safeArray(frame.setas).length * 5 +
+        safeArray(frame.movimentos_bola).length * 4 +
+        safeArray(frame.movimentos_jogadores).length * 3 +
+        safeArray(frame.destaques).length;
+      const bestFrame = frames[bestIndex] || {};
+      const bestScore =
+        safeArray(bestFrame.setas).length * 5 +
+        safeArray(bestFrame.movimentos_bola).length * 4 +
+        safeArray(bestFrame.movimentos_jogadores).length * 3 +
+        safeArray(bestFrame.destaques).length;
+      return score >= bestScore ? index : bestIndex;
+    }, 0);
+
+    const frame = frames[frameIndex] || frames[0];
+    const player = new DiagramPlayer(null);
+    player.animation = animation;
+    player.currentFrame = frameIndex;
+    const svg = player.svg(frame).replace('class="animated-diagram-svg"', 'class="animated-diagram-svg objective-snapshot-svg"');
+    const hasBall =
+      safeArray(animation.bolas).length > 0 ||
+      frames.some((item) => safeArray(item.movimentos_bola).length > 0);
+    const visualTip = hasBall
+      ? "Dica visual: bola amarela mostra a trajetória; setas azuis mostram deslocamento."
+      : "Dica visual: setas azuis mostram o caminho; cones e zonas indicam referências.";
+
+    return `
+      <figure class="exercise-visual-card has-animation-snapshot" aria-label="Ilustração do exercício ${escapeHTML(exercise.nome)} baseada na animação">
+        <div class="objective-snapshot-stage">
+          ${svg}
+        </div>
+        <figcaption class="exercise-visual-meta objective-snapshot-meta">
+          <strong>${escapeHTML(titleCase(exercise.categoria || "Treino"))}</strong>
+          <span>${escapeHTML(frame.titulo || "Execução")}</span>
+        </figcaption>
+        <small class="objective-visual-tip">${escapeHTML(visualTip)}</small>
+      </figure>
     `;
   }
 
@@ -45658,7 +45707,10 @@ class FilterManager {
       this.updateActiveChips();
       this.onExerciseChange();
     };
-    const updateLessons = () => this.onLessonChange();
+    const updateLessons = () => {
+      this.updateLessonActiveChips();
+      this.onLessonChange();
+    };
     exerciseFilters.addEventListener("input", updateExercises);
     exerciseFilters.addEventListener("change", updateExercises);
     mobileSearch.addEventListener("input", () => {
@@ -45680,6 +45732,7 @@ class FilterManager {
       clearLessonFiltersButton.addEventListener("click", () => {
         lessonFilters.reset();
         this.closeFilters();
+        this.updateLessonActiveChips();
         this.onLessonChange();
       });
     }
@@ -45694,7 +45747,18 @@ class FilterManager {
       this.updateActiveChips();
       this.onExerciseChange();
     });
+    const activeLessonFilterChips = document.getElementById("activeLessonFilterChips");
+    if (activeLessonFilterChips) {
+      activeLessonFilterChips.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-lesson-filter-key]");
+        if (!button) return;
+        this.clearLessonFilter(button.dataset.lessonFilterKey);
+        this.updateLessonActiveChips();
+        this.onLessonChange();
+      });
+    }
     this.updateActiveChips();
+    this.updateLessonActiveChips();
   }
 
   populateSelect(id, values, label) {
@@ -45749,6 +45813,18 @@ class FilterManager {
     if (key === "search") document.getElementById("mobileFilterSearch").value = "";
   }
 
+  clearLessonFilter(key) {
+    const fieldMap = {
+      search: "lessonSearch",
+      level: "lessonLevel",
+      audience: "lessonAudience",
+      duration: "lessonDuration",
+      intensity: "lessonIntensity"
+    };
+    const field = document.getElementById(fieldMap[key]);
+    if (field) field.value = "";
+  }
+
   updateActiveChips() {
     const filters = this.getExerciseFilters();
     const labels = {
@@ -45786,6 +45862,33 @@ class FilterManager {
       duration: document.getElementById("lessonDuration").value,
       intensity: document.getElementById("lessonIntensity").value
     };
+  }
+
+  updateLessonActiveChips() {
+    const root = document.getElementById("activeLessonFilterChips");
+    if (!root) return;
+    const filters = this.getLessonFilters();
+    const labels = {
+      search: "Busca",
+      level: "Nível",
+      audience: "Público",
+      duration: "Duração",
+      intensity: "Intensidade"
+    };
+    const chips = Object.entries(filters)
+      .filter(([, value]) => value)
+      .map(([key, value]) => {
+        const normalized = normalizeText(value);
+        const intensityClass = ["leve", "baixa", "moderada", "media", "média", "alta"].some((item) => normalized.includes(normalizeText(item))) ? "is-intensity" : "";
+        return `
+        <span class="filter-chip lesson-filter-${escapeHTML(key)} ${intensityClass}">
+          ${escapeHTML(labels[key])}: ${escapeHTML(titleCase(value))}
+          <button type="button" aria-label="Remover filtro ${escapeHTML(labels[key])}" data-lesson-filter-key="${key}">×</button>
+        </span>
+      `;
+      })
+      .join("");
+    root.innerHTML = chips;
   }
 }
 

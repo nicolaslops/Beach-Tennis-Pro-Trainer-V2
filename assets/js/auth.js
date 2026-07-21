@@ -214,7 +214,7 @@
         <img class="pwa-welcome-logo" src="assets/images/logo-beach-tennis-192.png" alt="">
         <span class="eyebrow">Área exclusiva</span>
         <h1 id="authTitle">Entrar no App</h1>
-        <p>Use o e-mail da compra e a senha enviada para acessar seus treinos.</p>
+        <p>Use o e-mail da compra e a senha que você criou para acessar seus treinos.</p>
         ${messageHTML(options.message || setupWarning, options.type || (setupWarning ? "warning" : "info"))}
         <form class="auth-form" data-auth-form="login">
           <label>
@@ -297,13 +297,25 @@
   }
 
   function renderFirstAccess(options = {}) {
+    if (options.inviteExpired) {
+      renderAuth(`
+        <div class="pwa-welcome-card auth-card">
+          <img class="pwa-welcome-logo" src="assets/images/logo-beach-tennis-192.png" alt="">
+          <span class="eyebrow">Primeiro acesso</span>
+          <h1 id="authTitle">Crie sua senha</h1>
+          ${messageHTML(options.message || "Este link expirou ou já foi utilizado. Solicite um novo acesso.", options.type || "warning")}
+          <button class="auth-link-button" type="button" data-auth-nav="${ROUTES.login}">Voltar para login</button>
+        </div>
+      `);
+      return;
+    }
     const passwordAlreadyChanged = Boolean(options.passwordUpdated || state.firstAccessPasswordChanged);
     renderAuth(`
       <div class="pwa-welcome-card auth-card">
         <img class="pwa-welcome-logo" src="assets/images/logo-beach-tennis-192.png" alt="">
         <span class="eyebrow">Primeiro acesso</span>
-        <h1 id="authTitle">${passwordAlreadyChanged ? "Concluir liberação" : "Troque sua senha temporária"}</h1>
-        <p>${passwordAlreadyChanged ? "Sua senha já foi alterada. Agora finalize a liberação segura do app." : "Para liberar o app, crie uma senha própria. O acesso só abre depois que o Supabase confirmar essa troca."}</p>
+        <h1 id="authTitle">${passwordAlreadyChanged ? "Concluir liberação" : "Crie sua senha"}</h1>
+        <p>${passwordAlreadyChanged ? "Sua senha já foi criada. Agora finalize a liberação segura do app." : "Defina uma senha própria para liberar seu acesso. O app só abre depois que o Supabase confirmar essa criação."}</p>
         ${messageHTML(options.message, options.type)}
         ${passwordAlreadyChanged ? `
           <form class="auth-form" data-auth-form="first-access-complete">
@@ -329,9 +341,9 @@
     const flash = consumeFlash(route);
     if (route === ROUTES.firstAccess && !state.session) {
       lockApp();
-      navigate(ROUTES.login, {
-        replace: true,
-        message: "Entre na sua conta antes de trocar a senha temporária.",
+      renderFirstAccess({
+        inviteExpired: true,
+        message: "Este link expirou ou já foi utilizado. Solicite um novo acesso.",
         type: "warning"
       });
       return;
@@ -384,6 +396,9 @@
     const password = String(form.elements.password?.value || "");
     const confirmPassword = String(form.elements.confirmPassword?.value || "");
     if (password.length < 8) return "A senha precisa ter pelo menos 8 caracteres.";
+    if (!/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+      return "Use uma senha com letras maiúsculas, minúsculas e números.";
+    }
     if (password !== confirmPassword) return "As senhas não conferem.";
     return "";
   }
@@ -556,9 +571,6 @@
     renderLoading("Validando sua compra...");
 
     try {
-      const sessionIsValid = await verifyCurrentSession();
-      if (!sessionIsValid) return;
-
       const record = await fetchPurchase(session);
       state.accessRecord = record;
 
@@ -577,11 +589,13 @@
       }
 
       if (mustChangePassword(record)) {
-        startSessionMonitor();
         lockApp();
         navigate(ROUTES.firstAccess, { replace: true });
         return;
       }
+
+      const sessionIsValid = await verifyCurrentSession();
+      if (!sessionIsValid) return;
 
       state.firstAccessPasswordChanged = false;
       unlockApp();
