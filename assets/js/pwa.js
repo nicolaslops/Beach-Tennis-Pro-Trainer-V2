@@ -1,4 +1,7 @@
 (() => {
+  const ACCESS_CHOICE_KEY = "btpt_access_choice";
+  const USE_HASH_ROUTING = window.location.protocol === "file:";
+  const LOGIN_ROUTE = "/login";
   const iosModal = document.getElementById("iosInstallModal");
   const iosClose = document.getElementById("iosInstallClose");
   const iosOk = document.getElementById("iosInstallOk");
@@ -11,6 +14,32 @@
   const isAndroid = /android/.test(userAgent);
   const isChromeLike = /chrome|crios|edg|samsungbrowser/.test(userAgent);
   const isStandalone = () => window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+
+  function routeTarget(route) {
+    return USE_HASH_ROUTING ? `#${route}` : route;
+  }
+
+  function openLogin(choice) {
+    try {
+      window.localStorage.setItem(ACCESS_CHOICE_KEY, choice);
+    } catch (error) {
+      console.warn("Nao foi possivel salvar a escolha de acesso.", error);
+    }
+
+    const target = routeTarget(LOGIN_ROUTE);
+    if (USE_HASH_ROUTING) {
+      window.location.hash = target;
+      const hashEvent = typeof HashChangeEvent === "function" ? new HashChangeEvent("hashchange") : new Event("hashchange");
+      window.dispatchEvent(hashEvent);
+      return;
+    }
+
+    if (window.location.pathname !== LOGIN_ROUTE) {
+      window.history.pushState({}, "", target);
+    }
+    const popEvent = typeof PopStateEvent === "function" ? new PopStateEvent("popstate") : new Event("popstate");
+    window.dispatchEvent(popEvent);
+  }
 
   function emitStateChange() {
     window.dispatchEvent(new CustomEvent("btpt:pwa-state", {
@@ -87,6 +116,22 @@
   iosOk?.addEventListener("click", closeIOSModal);
   iosModal?.addEventListener("click", (event) => {
     if (event.target === iosModal) closeIOSModal();
+  });
+
+  document.addEventListener("click", async (event) => {
+    const installButton = event.target.closest("#pwaInstallButton");
+    const continueButton = event.target.closest("#pwaContinueButton");
+    if (!installButton && !continueButton) return;
+
+    event.preventDefault();
+
+    if (installButton) {
+      await requestInstall();
+      openLogin("app");
+      return;
+    }
+
+    openLogin("web");
   });
 
   window.addEventListener("appinstalled", () => {

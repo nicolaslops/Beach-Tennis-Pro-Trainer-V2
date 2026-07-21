@@ -946,54 +946,65 @@
   });
 
   async function init() {
-    lockApp();
-    const client = getSupabaseClient();
-    if (!client) {
-      document.body.classList.remove("auth-pending");
-      if (!AUTH_ROUTES.has(currentRoute())) {
-        navigate(preferredSignedOutRoute(), { replace: true });
+    try {
+      lockApp();
+      const client = getSupabaseClient();
+      if (!client) {
+        document.body.classList.remove("auth-pending");
+        if (!AUTH_ROUTES.has(currentRoute())) {
+          navigate(preferredSignedOutRoute(), { replace: true });
+        } else {
+          renderCurrentRoute();
+        }
+        return;
+      }
+
+      client.auth.onAuthStateChange((event, session) => {
+        state.session = session;
+        if (state.authMutationInProgress) return;
+        if (event === "PASSWORD_RECOVERY") {
+          navigate(ROUTES.reset, { replace: true });
+          return;
+        }
+        if (event === "SIGNED_OUT") {
+          stopSessionMonitor();
+          clearPrivateAuthState();
+          document.body.classList.remove("auth-pending");
+          if (!AUTH_ROUTES.has(currentRoute())) renderCurrentRoute();
+          return;
+        }
+        if (
+          session &&
+          ["SIGNED_IN", "TOKEN_REFRESHED", "USER_UPDATED"].includes(event) &&
+          currentRoute() !== ROUTES.reset &&
+          currentRoute() !== ROUTES.firstAccess
+        ) {
+          validateAccess(session);
+        }
+      });
+
+      const { data } = await client.auth.getSession();
+      state.session = data.session;
+      if (data.session) {
+        if (currentRoute() === ROUTES.reset) {
+          document.body.classList.remove("auth-pending");
+          renderReset();
+        } else {
+          await validateAccess(data.session);
+        }
       } else {
+        document.body.classList.remove("auth-pending");
         renderCurrentRoute();
       }
-      return;
-    }
-
-    client.auth.onAuthStateChange((event, session) => {
-      state.session = session;
-      if (state.authMutationInProgress) return;
-      if (event === "PASSWORD_RECOVERY") {
-        navigate(ROUTES.reset, { replace: true });
-        return;
-      }
-      if (event === "SIGNED_OUT") {
-        stopSessionMonitor();
-        clearPrivateAuthState();
-        document.body.classList.remove("auth-pending");
-        if (!AUTH_ROUTES.has(currentRoute())) renderCurrentRoute();
-        return;
-      }
-      if (
-        session &&
-        ["SIGNED_IN", "TOKEN_REFRESHED", "USER_UPDATED"].includes(event) &&
-        currentRoute() !== ROUTES.reset &&
-        currentRoute() !== ROUTES.firstAccess
-      ) {
-        validateAccess(session);
-      }
-    });
-
-    const { data } = await client.auth.getSession();
-    state.session = data.session;
-    if (data.session) {
-      if (currentRoute() === ROUTES.reset) {
-        document.body.classList.remove("auth-pending");
-        renderReset();
-      } else {
-        await validateAccess(data.session);
-      }
-    } else {
+    } catch (error) {
+      console.warn("Nao foi possivel iniciar a autenticacao.", error);
+      clearPrivateAuthState();
       document.body.classList.remove("auth-pending");
-      renderCurrentRoute();
+      navigate(preferredSignedOutRoute(), {
+        replace: true,
+        message: "NÃ£o foi possÃ­vel iniciar o acesso automaticamente. Tente entrar novamente.",
+        type: "warning"
+      });
     }
   }
 

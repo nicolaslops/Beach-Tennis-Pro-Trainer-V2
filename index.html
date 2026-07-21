@@ -16,13 +16,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css?v=114">
-  <link rel="stylesheet" href="assets/css/visual-v61.css?v=114">
-  <script defer src="assets/js/env.js?v=114"></script>
+  <link rel="stylesheet" href="assets/css/style.css?v=115">
+  <link rel="stylesheet" href="assets/css/visual-v61.css?v=115">
+  <script defer src="assets/js/env.js?v=115"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script defer src="assets/js/pwa.js?v=114"></script>
-  <script defer src="assets/js/auth.js?v=114"></script>
-  <script defer src="assets/js/app.js?v=114"></script>
+  <script defer src="assets/js/pwa.js?v=115"></script>
+  <script defer src="assets/js/auth.js?v=115"></script>
+  <script defer src="assets/js/app.js?v=115"></script>
 </head>
 <body class="auth-locked auth-pending">
   <section class="pwa-welcome" id="pwaWelcome" aria-labelledby="pwaWelcomeTitle">
@@ -32,8 +32,8 @@
       <h1 id="pwaWelcomeTitle">Treine, planeje e evolua direto da quadra.</h1>
       <p>Instale o app para acessar mais rápido no celular ou continue usando pela web.</p>
       <div class="pwa-welcome-actions">
-        <button class="pwa-install-button" id="pwaInstallButton" type="button">BAIXAR APLICATIVO</button>
-        <button class="pwa-web-button" id="pwaContinueButton" type="button">Continuar na Web</button>
+        <button class="pwa-install-button" id="pwaInstallButton" type="button" data-auth-action="choose-app">BAIXAR APLICATIVO</button>
+        <button class="pwa-web-button" id="pwaContinueButton" type="button" data-auth-action="choose-web">Continuar na Web</button>
       </div>
     </div>
   </section>
