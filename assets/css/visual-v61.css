@@ -42,6 +42,390 @@
   --shadow: var(--app-shadow);
 }
 
+/* v120: acesso Freemium por pagamento único, paywalls e conta. */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.current-plan-badge {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 1px;
+  min-width: 82px;
+  min-height: 44px;
+  padding: 7px 12px;
+  color: var(--app-text);
+  text-align: left;
+  background: var(--app-primary-soft);
+  border: 1px solid var(--app-border-strong);
+  border-radius: 12px;
+}
+
+.current-plan-badge span {
+  color: var(--app-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.current-plan-badge strong {
+  color: var(--app-primary-strong);
+  font-size: 0.84rem;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  width: 100%;
+}
+
+.pricing-card {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  min-width: 0;
+  padding: 20px;
+  background: var(--app-card);
+  border: 1px solid var(--app-border);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(18, 34, 38, 0.07);
+}
+
+.pricing-card.is-featured {
+  border-color: var(--app-primary);
+  box-shadow: 0 14px 34px rgba(0, 127, 139, 0.15);
+}
+
+.pricing-card.is-current {
+  box-shadow: inset 4px 0 0 var(--app-primary);
+}
+
+.pricing-highlight {
+  justify-self: start;
+  padding: 6px 9px;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  background: var(--app-primary-strong);
+  border-radius: 8px;
+}
+
+.pricing-card-heading {
+  display: grid;
+  gap: 6px;
+}
+
+.pricing-plan-name {
+  color: var(--app-muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.pricing-card-heading strong {
+  color: var(--app-text);
+  font-size: clamp(1.6rem, 8vw, 2.25rem);
+  line-height: 1;
+}
+
+.pricing-card ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pricing-card li {
+  position: relative;
+  padding-left: 24px;
+  color: var(--app-text);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.pricing-card li::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--app-success);
+  font-weight: 900;
+  content: "✓";
+}
+
+.plan-action {
+  align-self: end;
+  width: 100%;
+  min-height: 46px;
+}
+
+.plan-action.is-current,
+.plan-action.is-included {
+  color: var(--app-primary-strong);
+  background: var(--app-primary-soft);
+  border: 1px solid var(--app-border-strong);
+  opacity: 1;
+}
+
+.subscription-confirmation {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 16px;
+  background: var(--app-primary-soft);
+  border: 1px solid var(--app-primary);
+  border-radius: 14px;
+}
+
+.subscription-confirmation strong {
+  color: var(--app-text);
+}
+
+.subscription-confirmation p {
+  margin: 0;
+}
+
+.account-profile-summary,
+.subscription-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+
+.account-profile-summary {
+  margin-bottom: 16px;
+}
+
+.account-name-editor {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 16px;
+}
+
+.account-name-editor > label {
+  color: var(--app-muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.account-name-editor > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.account-name-editor input {
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 12px;
+  color: var(--app-text);
+  background: var(--app-card-soft);
+  border: 1px solid var(--app-border-strong);
+  border-radius: 11px;
+}
+
+.subscription-summary {
+  margin-bottom: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--app-border);
+}
+
+.account-profile-summary > div,
+.subscription-summary > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 12px;
+  background: var(--app-card-soft);
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+}
+
+.account-profile-summary span,
+.subscription-summary span {
+  color: var(--app-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.account-profile-summary strong,
+.subscription-summary strong {
+  overflow-wrap: anywhere;
+  color: var(--app-text);
+  font-size: 0.9rem;
+}
+
+.account-subscription-actions {
+  align-items: stretch;
+}
+
+.account-subscription-actions .button {
+  min-height: 44px;
+}
+
+.paywall-modal {
+  display: grid;
+  place-items: center;
+  width: min(92vw, 540px);
+  min-height: 0;
+  padding: 12px;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.paywall-card {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 26px 20px;
+  text-align: center;
+  background: var(--app-card);
+  border: 1px solid var(--app-border-strong);
+  border-radius: 18px;
+  box-shadow: var(--app-shadow);
+}
+
+.paywall-card.is-inline {
+  grid-column: 1 / -1;
+  max-width: 660px;
+  margin: 8px auto;
+}
+
+.paywall-lock {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  color: var(--app-primary-strong);
+  font-size: 1.15rem;
+  background: var(--app-primary-soft);
+  border: 1px solid var(--app-border-strong);
+  border-radius: 14px;
+}
+
+.paywall-card h2 {
+  max-width: 20ch;
+  margin: 0;
+  color: var(--app-text);
+  font-size: clamp(1.35rem, 7vw, 1.9rem);
+  line-height: 1.08;
+}
+
+.paywall-card p {
+  max-width: 44ch;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.paywall-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 9px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.exercise-card.is-locked {
+  border-color: var(--app-border-strong);
+}
+
+.exercise-card.is-locked .card-body {
+  color: var(--app-muted);
+}
+
+.card-lock {
+  display: grid;
+  flex: 0 0 38px;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  color: var(--app-primary-strong);
+  background: var(--app-primary-soft);
+  border: 1px solid var(--app-border-strong);
+  border-radius: 11px;
+}
+
+html.dark-mode .pricing-card,
+html.dark-mode .paywall-card {
+  background: var(--app-card);
+  border-color: var(--app-border-strong);
+  box-shadow: none;
+}
+
+html.dark-mode .pricing-highlight {
+  color: #071114;
+  background: var(--app-primary);
+}
+
+html.dark-mode .current-plan-badge strong,
+html.dark-mode .plan-action.is-current,
+html.dark-mode .plan-action.is-included,
+html.dark-mode .card-lock {
+  color: var(--app-primary);
+}
+
+@media (min-width: 680px) {
+  .account-profile-summary,
+  .subscription-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .paywall-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .account-name-editor > div {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+@media (min-width: 900px) {
+  .pricing-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  .pricing-card {
+    grid-template-rows: auto auto 1fr auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .topbar {
+    gap: 9px;
+  }
+
+  .current-plan-badge {
+    min-width: 74px;
+    min-height: 40px;
+    padding: 6px 9px;
+  }
+
+  .current-plan-badge strong {
+    font-size: 0.77rem;
+  }
+
+  .pricing-card,
+  .paywall-card {
+    padding: 18px 16px;
+  }
+
+  .account-subscription-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 html.dark-mode,
 body.dark-mode {
   --app-bg: #071114;

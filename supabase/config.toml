@@ -1,2 +1,5 @@
 [functions.hotmart-webhook]
 verify_jwt = false
+
+[functions.app-content]
+verify_jwt = false

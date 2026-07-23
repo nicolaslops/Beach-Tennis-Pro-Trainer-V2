@@ -1,24 +1,25 @@
 (() => {
   const ACCESS_CHOICE_KEY = "btpt_access_choice";
+  const REQUESTED_PLAN_KEY = "btpt_requested_plan";
   const USE_HASH_ROUTING = window.location.protocol === "file:";
   const ROUTES = {
     access: "/acesso",
     login: "/login",
+    signup: "/criar-conta",
     forgot: "/esqueci-senha",
     reset: "/redefinir-senha",
     firstAccess: "/primeiro-acesso",
     app: "/"
   };
   const AUTH_ROUTES = new Set(Object.values(ROUTES).filter((route) => route !== ROUTES.app));
-  const ACTIVE_PURCHASE_STATUSES = new Set([
-    "approved"
-  ]);
   const SESSION_CHECK_INTERVAL_MS = 15000;
+  const PROFILE_REFRESH_INTERVAL_MS = 60000;
   const SESSION_REPLACED_MESSAGE = "Sua conta foi acessada em outro dispositivo. Entre novamente para continuar.";
 
   const state = {
     client: null,
     session: null,
+    profile: null,
     accessRecord: null,
     flash: null,
     firstAccessPasswordChanged: false,
@@ -30,7 +31,8 @@
     sessionMonitorTimer: null,
     sessionMonitorFocusHandler: null,
     sessionMonitorVisibilityHandler: null,
-    logoutInProgress: false
+    logoutInProgress: false,
+    lastProfileRefreshAt: 0
   };
 
   function escapeHTML(value) {
@@ -54,6 +56,17 @@
       return normalizePath(hashRoute || ROUTES.app);
     }
     return normalizePath(window.location.pathname);
+  }
+
+  function captureRequestedPlan() {
+    try {
+      const requestedPlan = new URLSearchParams(window.location.search).get("plan");
+      if (["plus", "pro"].includes(requestedPlan)) {
+        window.sessionStorage.setItem(REQUESTED_PLAN_KEY, requestedPlan);
+      }
+    } catch {
+      // O acesso normal continua mesmo quando o storage estiver indisponível.
+    }
   }
 
   function routeTarget(route) {
@@ -90,7 +103,7 @@
   }
 
   function isPrivateRoute(route = currentRoute()) {
-    return ![ROUTES.access, ROUTES.login, ROUTES.forgot, ROUTES.reset].includes(normalizePath(route));
+    return ![ROUTES.access, ROUTES.login, ROUTES.signup, ROUTES.forgot, ROUTES.reset].includes(normalizePath(route));
   }
 
   function getAuthRoot() {
@@ -195,13 +208,16 @@
         <img class="pwa-welcome-logo" src="assets/images/logo-beach-tennis-192.png" alt="">
         <span class="eyebrow">Acesso do aluno</span>
         <h1 id="authTitle">Escolha como deseja acessar</h1>
-        <p>Instale como aplicativo ou continue no navegador. Depois, entre com o e-mail liberado pela sua compra.</p>
+        <p>Instale como aplicativo ou continue no navegador. Você pode criar uma conta grátis e começar agora.</p>
         ${messageHTML(options.message || setupWarning, options.type || (setupWarning ? "warning" : "info"))}
         <div class="pwa-welcome-actions auth-actions">
           <button class="pwa-install-button is-visible" id="pwaInstallButton" type="button" data-auth-action="choose-app">${installButtonText()}</button>
           <button class="pwa-web-button" id="pwaContinueButton" type="button" data-auth-action="choose-web">Continuar no navegador</button>
         </div>
-        <button class="auth-link-button" type="button" data-auth-nav="${ROUTES.login}">Já tenho acesso e quero entrar</button>
+        <div class="auth-secondary-actions">
+          <button class="auth-link-button" type="button" data-auth-nav="${ROUTES.login}">Já tenho conta</button>
+          <button class="auth-link-button" type="button" data-auth-nav="${ROUTES.signup}">Criar conta grátis</button>
+        </div>
       </div>
     `);
   }
@@ -212,9 +228,9 @@
     renderAuth(`
       <div class="pwa-welcome-card auth-card auth-login-card">
         <img class="pwa-welcome-logo" src="assets/images/logo-beach-tennis-192.png" alt="">
-        <span class="eyebrow">Área exclusiva</span>
+        <span class="eyebrow">Sua área de treino</span>
         <h1 id="authTitle">Entrar no App</h1>
-        <p>Use o e-mail da compra e a senha que você criou para acessar seus treinos.</p>
+        <p>Entre com seu e-mail e senha. Toda conta começa no Grátis; compras Plus ou Pro liberam acesso permanente.</p>
         ${messageHTML(options.message || setupWarning, options.type || (setupWarning ? "warning" : "info"))}
         <form class="auth-form" data-auth-form="login">
           <label>
@@ -229,6 +245,37 @@
         </form>
         <div class="auth-secondary-actions">
           <button class="auth-link-button" type="button" data-auth-nav="${ROUTES.forgot}">Esqueci minha senha</button>
+          <button class="auth-link-button" type="button" data-auth-nav="${ROUTES.signup}">Criar conta grátis</button>
+          <button class="auth-link-button" type="button" data-auth-nav="${ROUTES.access}">Voltar para acesso</button>
+        </div>
+      </div>
+    `);
+  }
+
+  function renderSignup(options = {}) {
+    const setupWarning = configMessage();
+    const disabled = setupWarning ? "disabled" : "";
+    renderAuth(`
+      <div class="pwa-welcome-card auth-card auth-signup-card">
+        <img class="pwa-welcome-logo" src="assets/images/logo-beach-tennis-192.png" alt="">
+        <span class="eyebrow">Plano Grátis</span>
+        <h1 id="authTitle">Crie sua conta</h1>
+        <p>Comece com 25 exercícios, montador de treino, favoritos e treinos salvos.</p>
+        ${messageHTML(options.message || setupWarning, options.type || (setupWarning ? "warning" : "info"))}
+        <form class="auth-form" data-auth-form="signup">
+          <label>
+            <span>Nome</span>
+            <input name="name" type="text" autocomplete="name" minlength="2" maxlength="80" required ${disabled}>
+          </label>
+          <label>
+            <span>E-mail</span>
+            <input name="email" type="email" autocomplete="email" required ${disabled}>
+          </label>
+          ${passwordFields()}
+          <button class="button primary auth-submit" type="submit" ${disabled}>Criar conta grátis</button>
+        </form>
+        <div class="auth-secondary-actions">
+          <button class="auth-link-button" type="button" data-auth-nav="${ROUTES.login}">Já tenho conta</button>
           <button class="auth-link-button" type="button" data-auth-nav="${ROUTES.access}">Voltar para acesso</button>
         </div>
       </div>
@@ -247,7 +294,7 @@
         ${messageHTML(options.message || setupWarning, options.type || (setupWarning ? "warning" : "info"))}
         <form class="auth-form" data-auth-form="forgot">
           <label>
-            <span>E-mail da compra</span>
+            <span>E-mail</span>
             <input name="email" type="email" autocomplete="email" required ${disabled}>
           </label>
           <button class="button primary auth-submit" type="submit" ${disabled}>Enviar link</button>
@@ -352,7 +399,6 @@
     if (
       state.session &&
       state.accessRecord &&
-      isAccessActive(state.accessRecord) &&
       mustChangePassword(state.accessRecord)
     ) {
       if (route !== ROUTES.firstAccess) {
@@ -366,8 +412,8 @@
 
     if (
       state.session &&
-      state.accessRecord &&
-      isAccessActive(state.accessRecord) &&
+      state.profile &&
+      isAccountActive(state.profile) &&
       !mustChangePassword(state.accessRecord) &&
       route !== ROUTES.reset &&
       route !== ROUTES.firstAccess
@@ -381,6 +427,7 @@
 
     if (route === ROUTES.access) return renderAccess(flash || {});
     if (route === ROUTES.login) return renderLogin(flash || {});
+    if (route === ROUTES.signup) return renderSignup(flash || {});
     if (route === ROUTES.forgot) return renderForgot(flash || {});
     if (route === ROUTES.reset) return renderReset(flash || {});
     if (route === ROUTES.firstAccess) return renderFirstAccess(flash || {});
@@ -414,6 +461,40 @@
     }
   }
 
+  async function fetchProfile(session) {
+    const client = getSupabaseClient();
+    const user = session?.user;
+    if (!client || !user) return null;
+
+    let response = await client
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (response.error) throw response.error;
+    if (response.data) return response.data;
+
+    const ensured = await client.rpc("ensure_current_profile");
+    if (ensured.error) throw ensured.error;
+
+    response = await client
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (response.error) throw response.error;
+    return response.data || null;
+  }
+
+  async function claimApprovedPurchases(session) {
+    const client = getSupabaseClient();
+    if (!client || !session?.user) return null;
+    const { data, error } = await client.rpc("claim_current_user_purchases");
+    if (error) throw error;
+    return data || null;
+  }
+
   async function fetchPurchase(session) {
     const client = getSupabaseClient();
     const user = session?.user;
@@ -430,6 +511,8 @@
         .from("hotmart_purchases")
         .select(selectFields)
         .eq(attempt.column, attempt.value)
+        .order("updated_at", { ascending: false })
+        .limit(1)
         .maybeSingle();
       if (data) return data;
       if (error) lastError = error;
@@ -438,10 +521,49 @@
     return null;
   }
 
-  function isAccessActive(record) {
-    if (!record) return false;
-    const status = String(record.purchase_status || "").trim().toLowerCase();
-    return record.access_active === true && ACTIVE_PURCHASE_STATUSES.has(status);
+  function isAccountActive(profile) {
+    return Boolean(profile) && profile.access_active !== false;
+  }
+
+  function buildOfflineFreeProfile(session) {
+    const user = session?.user;
+    return {
+      id: user?.id || "",
+      name: user?.user_metadata?.name || "Atleta",
+      email: user?.email || "",
+      plan: "free",
+      subscription_status: "inactive",
+      access_active: true,
+      lifetime_access: false,
+      access_type: "free",
+      permanent_plan: null,
+      offline_fallback: true
+    };
+  }
+
+  async function startOfflineFreeAccess(session) {
+    const profile = buildOfflineFreeProfile(session);
+    state.session = session;
+    state.profile = profile;
+    state.accessRecord = null;
+    state.lastProfileRefreshAt = 0;
+    window.BTPT_SUBSCRIPTION?.setContext({
+      client: getSupabaseClient(),
+      session,
+      profile
+    });
+    if (AUTH_ROUTES.has(currentRoute())) replaceRouteSilently(ROUTES.app);
+    unlockApp();
+    startSessionMonitor();
+    window.dispatchEvent(new CustomEvent("btpt:auth-ready", {
+      detail: { client: getSupabaseClient(), session, profile, offline: true }
+    }));
+    window.dispatchEvent(new CustomEvent("btpt:subscription-message", {
+      detail: {
+        type: "warning",
+        message: "Você está offline. Por segurança, somente o conteúdo gratuito já salvo ficará disponível."
+      }
+    }));
   }
 
   function mustChangePassword(record) {
@@ -450,8 +572,10 @@
 
   function clearPrivateAuthState() {
     state.session = null;
+    state.profile = null;
     state.accessRecord = null;
     state.firstAccessPasswordChanged = false;
+    state.lastProfileRefreshAt = 0;
   }
 
   async function registerCurrentSession(client = getSupabaseClient()) {
@@ -554,6 +678,9 @@
         await handleReplacedSession();
         return false;
       }
+      if (Date.now() - state.lastProfileRefreshAt >= PROFILE_REFRESH_INTERVAL_MS) {
+        await refreshProfile({ silent: true });
+      }
       return true;
     } catch (error) {
       console.warn("Não foi possível confirmar a sessão atual.", error);
@@ -564,17 +691,66 @@
     }
   }
 
+  async function refreshProfile(options = {}) {
+    if (!state.session) return null;
+    try {
+      await claimApprovedPurchases(state.session);
+      const profile = await fetchProfile(state.session);
+      if (!profile) throw new Error("profile_not_found");
+      state.profile = profile;
+      state.lastProfileRefreshAt = Date.now();
+      window.BTPT_SUBSCRIPTION?.setContext({
+        client: getSupabaseClient(),
+        session: state.session,
+        profile
+      });
+      return profile;
+    } catch (error) {
+      if (!options.silent) throw error;
+      console.warn("Não foi possível atualizar o perfil agora.");
+      return null;
+    }
+  }
+
+  async function updateProfileName(name) {
+    const value = String(name || "").trim();
+    if (value.length < 2 || value.length > 80) {
+      return { ok: false, reason: "invalid_name" };
+    }
+    const client = getSupabaseClient();
+    if (!client || !state.session?.user) return { ok: false, reason: "session_unavailable" };
+    const { data, error } = await client
+      .from("profiles")
+      .update({ name: value })
+      .eq("id", state.session.user.id)
+      .select("*")
+      .single();
+    if (error || !data) return { ok: false, reason: error?.message || "update_failed" };
+    state.profile = data;
+    state.lastProfileRefreshAt = Date.now();
+    window.BTPT_SUBSCRIPTION?.setContext({ client, session: state.session, profile: data });
+    return { ok: true, profile: data };
+  }
+
   async function validateAccess(session) {
     if (state.validating) return;
     state.validating = true;
     state.session = session;
-    renderLoading("Validando sua compra...");
+    renderLoading("Carregando seu perfil...");
 
     try {
-      const record = await fetchPurchase(session);
-      state.accessRecord = record;
+      await claimApprovedPurchases(session);
+      const [profile, record] = await Promise.all([
+        fetchProfile(session),
+        fetchPurchase(session).catch(() => null)
+      ]);
+      if (!profile) throw new Error("profile_not_found");
 
-      if (!isAccessActive(record)) {
+      state.profile = profile;
+      state.accessRecord = record;
+      state.lastProfileRefreshAt = Date.now();
+
+      if (!isAccountActive(profile)) {
         await endCurrentSession();
         stopSessionMonitor();
         clearPrivateAuthState();
@@ -582,13 +758,14 @@
         lockApp();
         navigate(ROUTES.login, {
           replace: true,
-          message: "Seu acesso não está ativo. Confirme a compra ou fale com o suporte.",
+          message: "Esta conta está temporariamente indisponível. Fale com o suporte.",
           type: "warning"
         });
         return;
       }
 
       if (mustChangePassword(record)) {
+        window.BTPT_SUBSCRIPTION?.setContext({ client: getSupabaseClient(), session, profile });
         lockApp();
         navigate(ROUTES.firstAccess, { replace: true });
         return;
@@ -597,20 +774,30 @@
       const sessionIsValid = await verifyCurrentSession();
       if (!sessionIsValid) return;
 
+      window.BTPT_SUBSCRIPTION?.setContext({ client: getSupabaseClient(), session, profile });
+      await window.BTPT_USER_DATA_SYNC?.initialize({ client: getSupabaseClient(), session });
       state.firstAccessPasswordChanged = false;
-      unlockApp();
-      startSessionMonitor();
       if (AUTH_ROUTES.has(currentRoute())) {
         replaceRouteSilently(ROUTES.app);
       }
+      unlockApp();
+      startSessionMonitor();
+      window.dispatchEvent(new CustomEvent("btpt:auth-ready", {
+        detail: { client: getSupabaseClient(), session, profile }
+      }));
     } catch (error) {
       stopSessionMonitor();
+      const canUseOfflineFree = Boolean(session?.user) && String(error?.message || "") !== "profile_not_found";
+      if (canUseOfflineFree) {
+        await startOfflineFreeAccess(session);
+        return;
+      }
       clearPrivateAuthState();
       await getSupabaseClient()?.auth.signOut({ scope: "local" });
       lockApp();
       navigate(ROUTES.login, {
         replace: true,
-        message: "Não foi possível confirmar sua sessão. Entre novamente.",
+        message: "Não foi possível carregar seu perfil agora. Entre novamente em alguns instantes.",
         type: "warning"
       });
     } finally {
@@ -667,6 +854,83 @@
         }
         await validateAccess(data.session);
       }
+    } finally {
+      state.authMutationInProgress = false;
+      setFormBusy(form, false);
+    }
+  }
+
+  function signupRedirectUrl() {
+    if (USE_HASH_ROUTING) {
+      return `${window.location.href.split("#")[0]}#${ROUTES.login}`;
+    }
+    return `${window.location.origin}${ROUTES.login}`;
+  }
+
+  async function handleSignup(form) {
+    const client = getSupabaseClient();
+    if (!client) {
+      renderSignup({ message: configMessage(), type: "warning" });
+      return;
+    }
+
+    const name = String(form.elements.name?.value || "").trim();
+    const email = String(form.elements.email?.value || "").trim().toLowerCase();
+    const passwordError = validatePasswords(form);
+    if (name.length < 2) {
+      renderSignup({ message: "Digite seu nome.", type: "warning" });
+      return;
+    }
+    if (!validateEmail(email)) {
+      renderSignup({ message: "Digite um e-mail válido.", type: "warning" });
+      return;
+    }
+    if (passwordError) {
+      renderSignup({ message: passwordError, type: "warning" });
+      return;
+    }
+
+    setFormBusy(form, true);
+    state.authMutationInProgress = true;
+    try {
+      const { data, error } = await client.auth.signUp({
+        email,
+        password: String(form.elements.password?.value || ""),
+        options: {
+          emailRedirectTo: signupRedirectUrl(),
+          data: {
+            name,
+            source: "free_signup"
+          }
+        }
+      });
+
+      if (error) {
+        const duplicate = /already|registered|exists/i.test(error.message || "");
+        renderSignup({
+          message: duplicate ? "Este e-mail já possui uma conta. Entre ou redefina sua senha." : "Não foi possível criar a conta agora. Tente novamente.",
+          type: "warning"
+        });
+        return;
+      }
+
+      if (data.session) {
+        state.session = data.session;
+        const registered = await registerCurrentSession(client);
+        if (!registered) throw new Error("session_registration_failed");
+        await validateAccess(data.session);
+        return;
+      }
+
+      renderSignup({
+        message: "A conta foi criada, mas a confirmação de e-mail ainda está ativa no Supabase. Para usar o fluxo sem SMTP, desative Confirm email e entre novamente.",
+        type: "warning"
+      });
+    } catch (error) {
+      renderSignup({
+        message: "Sua conta foi criada, mas não foi possível concluir o acesso agora. Tente entrar novamente.",
+        type: "warning"
+      });
     } finally {
       state.authMutationInProgress = false;
       setFormBusy(form, false);
@@ -873,7 +1137,7 @@
   }
 
   function injectAccountActions() {
-    const settingsPanel = document.querySelector("#settings-view .settings-panel");
+    const settingsPanel = document.querySelector("#accountSettingsPanel") || document.querySelector("#settings-view .settings-panel");
     if (!settingsPanel || settingsPanel.querySelector(".auth-account-actions")) return;
     const actions = document.createElement("div");
     actions.className = "inline-actions auth-account-actions";
@@ -918,6 +1182,7 @@
     event.stopPropagation();
     const formName = form.dataset.authForm;
     if (formName === "login") handleLogin(form);
+    if (formName === "signup") handleSignup(form);
     if (formName === "forgot") handleForgot(form);
     if (formName === "reset") handleResetPassword(form);
     if (formName === "first-access") handleFirstAccess(form);
@@ -947,6 +1212,7 @@
 
   async function init() {
     try {
+      captureRequestedPlan();
       lockApp();
       const client = getSupabaseClient();
       if (!client) {
@@ -973,9 +1239,16 @@
           if (!AUTH_ROUTES.has(currentRoute())) renderCurrentRoute();
           return;
         }
+        if (session && event === "SIGNED_IN" && currentRoute() !== ROUTES.reset) {
+          window.setTimeout(async () => {
+            const registered = await registerCurrentSession(client);
+            if (registered) validateAccess(session);
+          }, 0);
+          return;
+        }
         if (
           session &&
-          ["SIGNED_IN", "TOKEN_REFRESHED", "USER_UPDATED"].includes(event) &&
+          ["TOKEN_REFRESHED", "USER_UPDATED"].includes(event) &&
           currentRoute() !== ROUTES.reset &&
           currentRoute() !== ROUTES.firstAccess
         ) {
@@ -1002,7 +1275,7 @@
       document.body.classList.remove("auth-pending");
       navigate(preferredSignedOutRoute(), {
         replace: true,
-        message: "NÃ£o foi possÃ­vel iniciar o acesso automaticamente. Tente entrar novamente.",
+        message: "Não foi possível iniciar o acesso automaticamente. Tente entrar novamente.",
         type: "warning"
       });
     }
@@ -1011,8 +1284,14 @@
   window.BTPT_AUTH = {
     logout,
     validateAccess,
+    refreshProfile,
+    updateProfileName,
+    getClient: getSupabaseClient,
     get session() {
       return state.session;
+    },
+    get profile() {
+      return state.profile;
     },
     get accessRecord() {
       return state.accessRecord;

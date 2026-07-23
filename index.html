@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
@@ -16,27 +16,53 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css?v=115">
-  <link rel="stylesheet" href="assets/css/visual-v61.css?v=115">
-  <script defer src="assets/js/env.js?v=115"></script>
+  <link rel="stylesheet" href="assets/css/style.css?v=119">
+  <link rel="stylesheet" href="assets/css/visual-v61.css?v=119">
+  <script defer src="assets/js/env.js?v=119"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script defer src="assets/js/pwa.js?v=115"></script>
-  <script defer src="assets/js/auth.js?v=115"></script>
-  <script defer src="assets/js/app.js?v=115"></script>
+  <script defer src="assets/js/config/plans.js?v=119"></script>
+  <script defer src="assets/js/config/free-exercises.js?v=119"></script>
+  <script defer src="assets/js/services/subscription-service.js?v=119"></script>
+  <script defer src="assets/js/services/access-control.js?v=119"></script>
+  <script defer src="assets/js/services/user-data-sync.js?v=119"></script>
+  <script defer src="assets/js/services/content-service.js?v=119"></script>
+  <script defer src="assets/js/ui/paywall.js?v=119"></script>
+  <script defer src="assets/js/pwa.js?v=119"></script>
+  <script defer src="assets/js/auth.js?v=119"></script>
+  <script defer src="assets/js/app.js?v=119"></script>
 </head>
 <body class="auth-locked auth-pending">
-  <section class="pwa-welcome" id="pwaWelcome" aria-labelledby="pwaWelcomeTitle">
-    <div class="pwa-welcome-card">
+  <section class="pwa-welcome auth-shell" id="pwaWelcome" aria-labelledby="authTitle">
+    <div class="pwa-welcome-card auth-card auth-access-card">
       <img class="pwa-welcome-logo" src="assets/images/logo-beach-tennis-192.png" alt="">
-      <span class="eyebrow">Beach Tennis Pro Trainer</span>
-      <h1 id="pwaWelcomeTitle">Treine, planeje e evolua direto da quadra.</h1>
-      <p>Instale o app para acessar mais rápido no celular ou continue usando pela web.</p>
-      <div class="pwa-welcome-actions">
-        <button class="pwa-install-button" id="pwaInstallButton" type="button" data-auth-action="choose-app">BAIXAR APLICATIVO</button>
-        <button class="pwa-web-button" id="pwaContinueButton" type="button" data-auth-action="choose-web">Continuar na Web</button>
+      <span class="eyebrow">Acesso do aluno</span>
+      <h1 id="authTitle">Escolha como deseja acessar</h1>
+      <p>Instale o app para acessar mais rápido no celular ou continue pela web. Você poderá criar sua conta grátis.</p>
+      <div class="pwa-welcome-actions auth-actions">
+        <button class="pwa-install-button is-visible" id="pwaInstallButton" type="button" data-auth-action="choose-app" onclick="return window.BTPT_INITIAL_ACCESS_FALLBACK ? window.BTPT_INITIAL_ACCESS_FALLBACK('app') : true">Baixar aplicativo</button>
+        <a class="pwa-web-button" id="pwaContinueButton" href="/login" data-auth-action="choose-web" role="button" onclick="return window.BTPT_INITIAL_ACCESS_FALLBACK ? window.BTPT_INITIAL_ACCESS_FALLBACK('web') : true">Continuar na Web</a>
       </div>
     </div>
   </section>
+
+  <script>
+    window.BTPT_INITIAL_ACCESS_FALLBACK = function (choice) {
+      var route = window.location.protocol === "file:" ? "#/login" : "/login";
+      try {
+        window.localStorage.setItem("btpt_access_choice", choice || "web");
+      } catch (error) {
+        console.warn("Nao foi possivel salvar a escolha de acesso.", error);
+      }
+      if (choice === "app" && window.BTPT_PWA && typeof window.BTPT_PWA.requestInstall === "function") {
+        Promise.resolve(window.BTPT_PWA.requestInstall()).finally(function () {
+          window.location.href = route;
+        });
+        return false;
+      }
+      window.location.href = route;
+      return false;
+    };
+  </script>
 
   <div class="ios-install-modal" id="iosInstallModal" hidden>
     <div class="ios-install-card" role="dialog" aria-modal="true" aria-labelledby="iosInstallTitle">
@@ -69,8 +95,9 @@
         <button class="nav-button" data-view="exercises">Exercícios</button>
         <button class="nav-button" data-view="favorites">Favoritos</button>
         <button class="nav-button" data-view="builder">Montador</button>
-        <button class="nav-button" data-view="lessons">Planos</button>
+        <button class="nav-button" data-view="lessons">Aulas</button>
         <button class="nav-button" data-view="evolution">Evolução</button>
+        <button class="nav-button" data-view="plans">Planos</button>
         <button class="nav-button" data-view="settings">Configurações</button>
       </nav>
     </aside>
@@ -81,6 +108,10 @@
           <span class="eyebrow">App premium de treino</span>
           <h1 id="viewTitle">Home</h1>
         </div>
+        <button class="current-plan-badge" type="button" data-action="navigate" data-target-view="plans" aria-label="Ver plano atual">
+          <span>Plano</span>
+          <strong data-current-plan-name>Grátis</strong>
+        </button>
       </header>
 
       <section class="view active" id="dashboard-view" aria-labelledby="dashboard-heading">
@@ -416,6 +447,23 @@
         <div class="plan-list" id="evolutionGrid"></div>
       </section>
 
+      <section class="view" id="plans-view" aria-labelledby="plans-heading">
+        <button class="view-back-home" type="button" data-action="navigate" data-target-view="dashboard">Voltar ao início</button>
+        <div class="section-heading subscription-heading">
+          <div>
+            <span class="eyebrow">Escolha seu acesso</span>
+            <h2 id="plans-heading">Planos</h2>
+            <p>Comece grátis ou libere o acesso permanente com um único pagamento.</p>
+          </div>
+        </div>
+        <div class="subscription-confirmation" id="subscriptionConfirmation" hidden>
+          <strong>Pagamento em validação</strong>
+          <p>A compra está sendo conferida. A liberação acontece somente após a confirmação segura da Hotmart.</p>
+          <button class="button secondary small" type="button" data-subscription-action="refresh">Verificar compra</button>
+        </div>
+        <div class="pricing-grid" id="pricingGrid"></div>
+      </section>
+
       <section class="view" id="settings-view" aria-labelledby="settings-heading">
         <button class="view-back-home" type="button" data-action="navigate" data-target-view="dashboard">Voltar ao início</button>
         <div class="section-heading">
@@ -424,7 +472,28 @@
             <p>Ajustes de áudio e conta do aplicativo.</p>
           </div>
         </div>
-        <section class="panel settings-panel">
+        <section class="panel settings-panel account-settings-panel" id="accountSettingsPanel">
+          <div class="settings-section-heading">
+            <span class="eyebrow">Minha conta</span>
+            <h3>Conta e acesso</h3>
+          </div>
+          <div class="account-profile-summary" id="accountProfileSummary">
+            <p>Carregando os dados da conta.</p>
+          </div>
+          <div class="account-name-editor">
+            <label for="accountNameInput">Nome exibido</label>
+            <div>
+              <input id="accountNameInput" type="text" minlength="2" maxlength="80" autocomplete="name">
+              <button class="button secondary" type="button" data-subscription-action="save-profile">Salvar nome</button>
+            </div>
+          </div>
+          <div class="subscription-summary" id="subscriptionSummary"></div>
+          <div class="inline-actions account-subscription-actions">
+            <button class="button primary" type="button" data-action="navigate" data-target-view="plans">Ver planos</button>
+            <button class="button secondary" type="button" data-subscription-action="refresh">Verificar compra</button>
+          </div>
+        </section>
+        <section class="panel settings-panel audio-settings-panel">
           <div class="settings-section-heading">
             <span class="eyebrow">Ajustes de áudio</span>
             <h3>Áudio explicativo</h3>
@@ -454,7 +523,7 @@
     <button class="bottom-nav-button active" data-view="dashboard"><span>Início</span></button>
     <button class="bottom-nav-button" data-view="exercises"><span>Exercícios</span></button>
     <button class="bottom-nav-button" data-view="builder"><span>Treino</span></button>
-    <button class="bottom-nav-button" data-view="lessons"><span>Planos</span></button>
+    <button class="bottom-nav-button" data-view="lessons"><span>Aulas</span></button>
     <button class="bottom-nav-button" data-view="evolution"><span>Evolução</span></button>
   </nav>
   <div class="mobile-workout-bar" id="mobileWorkoutBar">

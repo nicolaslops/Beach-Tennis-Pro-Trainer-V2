@@ -1,0 +1,21 @@
+-- Execute somente depois de revisar public.legacy_access_candidates.
+-- Substitua os valores de exemplo por user_id reais confirmados como compradores vitalícios.
+
+-- update public.profiles
+--    set lifetime_access = true,
+--        legacy_plan = 'pro',
+--        legacy_review_required = false,
+--        plan = 'pro',
+--        subscription_status = 'active',
+--        subscription_provider = 'hotmart_legacy',
+--        subscription_current_period_end = null,
+--        updated_at = now()
+--  where id in (
+--    '00000000-0000-0000-0000-000000000000'::uuid
+--  );
+
+-- Conferência final:
+-- select id, email, plan, lifetime_access, legacy_plan, legacy_review_required
+--   from public.profiles
+--  where lifetime_access = true
+--  order by email;

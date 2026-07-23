@@ -1,4 +1,6 @@
-# Auditoria da autenticacao Supabase - V2
+# Auditoria histórica da autenticação Supabase - V2
+
+> Este relatório descreve a arquitetura anterior à V118. Para implantação atual, use `FREEMIUM_IMPLEMENTATION.md` e `SUPABASE_AUTH_SETUP.md`.
 
 ## 1. Framework e estrutura identificados
 
